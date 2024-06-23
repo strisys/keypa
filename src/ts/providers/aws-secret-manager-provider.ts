@@ -37,10 +37,8 @@ class SecretStore {
       const credentials = (await this.getCredentials());
 
       this._client = new SecretsManagerClient({
-        // region: options.region,
         credentials,
       });
-
 
       console.log(`AWS secrets manager created successfully!`);
 
@@ -81,104 +79,50 @@ class SecretStore {
       }
     } while (nextToken);
 
-    return secrets;
+    return secrets.filter((s) => Boolean(s.ARN));
   }
 
-  public async getAll(): Promise<Array<{ name: string, value: string }>> {
-    const client = (await this.tryGetClient());
-    const values: Array<{ name: string, value: string }> = [];
-    const secretNames = (Array.isArray(this._options.secrets) ? this._options.secrets : ((typeof this._options.secrets === 'string') ? [this._options.secrets] : []));
+  private async getSecretValue(secretIdentitfier: string): Promise<GetSecretValueCommandOutput> {
+    try {
+      const client = (await this.tryGetClient());
+      return (await client.send(new GetSecretValueCommand({ SecretId: secretIdentitfier })));
+    }
+    catch (error) {
+      throw new Error(`Error retrieving AWS secret: ${secretIdentitfier}. ${error}`);
+    }
+  }
 
-    const parseSecretValue = (secretValueData: GetSecretValueCommandOutput): void => {
+  public async getAll(): Promise<Array<{ name: string, value: string, source: string }>> {
+    const secretNames = (Array.isArray(this._options.secrets) ? this._options.secrets : ((typeof this._options.secrets === 'string') ? [this._options.secrets] : []));
+    const values: Array<{ name: string, value: string, source: string }> = [];
+
+    const parseSecretValue = (secretIdentifier: string, secretValueData: GetSecretValueCommandOutput): void => {
       const kv = JSON.parse((secretValueData.SecretString || '{}'));
 
       Object.keys(kv).forEach((key) => {
-        values.push({ name: key, value: kv[key] });
+        values.push({ name: key, value: kv[key], source: secretIdentifier });
       });
     };
 
-    if (!secretNames.length) {
-      try {
-        const secrets = (await this.getAllSecrets());
-
-        for (const secret of secrets) {
-          const secretValueData = (await client.send(new GetSecretValueCommand({ SecretId: secret.ARN })));
-          parseSecretValue(secretValueData);
-        }
-      } catch (error) {
-        console.error('Error retrieving secrets:', error);
-        throw error;
-      }
-
-      return values;
+    const getSecretIdentitiers = async (): Promise<Array<string>> => {
+      return ((secretNames.length) ? secretNames : (await this.getAllSecrets()).map((s) => (s.ARN || '')));
     }
 
-    for (const secretName of secretNames) {
-      try {
-        const secretValueData = (await client.send(new GetSecretValueCommand({ SecretId: secretName })));
-        parseSecretValue(secretValueData);
-      } catch (error) {
-        console.error('Error retrieving secrets:', error);
-        throw error;
-      }
+    for (const secretIdentiifer of (await getSecretIdentitiers())) {
+      parseSecretValue(secretIdentiifer, (await this.getSecretValue(secretIdentiifer)));
     }
 
     return values;
   }
 }
 
-
-// const getCredentials = async (options: AwsProviderConfigType): Promise<any> => {
-//   const ssoCredentialProvider = fromSSO({
-//     profile: options.ssoProfile || 'default'
-//   });
-
-//   return (await ssoCredentialProvider());
-// }
-
-
-
-// const getAllSecrets = async (options: AwsProviderConfigType): Promise<Array<{ name: string, value: string }>> => {
-//   const credentials = await getSSOCredentials(options);
-
-//   const secretsManagerClient = new SecretsManagerClient({
-//     // region: options.region,
-//     credentials,
-//   });
-
-//   const secrets = [];
-//   let nextToken = null;
-
-//   do {
-//     const params: any = {
-//       MaxResults: 100,
-//       NextToken: nextToken,
-//     };
-
-//     try {
-//       const data = (await secretsManagerClient.send(new ListSecretsCommand(params)));
-//       nextToken = data.NextToken;
-
-//       for (const secret of (data.SecretList || [])) {
-//         const secretValueData = await secretsManagerClient.send(new GetSecretValueCommand({ SecretId: secret.ARN }));
-//         secrets.push({ name: (secret.Name || 'unknown'), value: (secretValueData.SecretString || '') });
-//       }
-//     } catch (error) {
-//       console.error('Error retrieving secrets:', error);
-//       throw error;
-//     }
-//   } while (nextToken);
-
-//   return secrets;
-// }
-
 export const fetch = async (options: AwsProviderConfigType): Promise<Record<string, KeypaValue>> => {
-  console.log(`loading secrets from 'aws secret manager': ${JSON.stringify(options)}`)
+  console.log(`loading secrets from 'AWS secret manager': ${JSON.stringify(options)}`)
   const secrets = await (new SecretStore(options)).getAll();
-  console.log(`'aws secret manager' secrets (${secrets.length}) loaded successfully! ${JSON.stringify(secrets.map((s) => s.name))}`)
+  console.log(`'AWS secret manager' secrets (${secrets.length}) loaded successfully! ${JSON.stringify(secrets.map((s) => s.name))}`)
 
-  return secrets.reduce((accumulator: Record<string, KeypaValue>, secret: { name: string, value: string }) => {
-    accumulator[secret.name] = new KeypaValue(secret.name, secret.value, `aws-secret-manager (${AWS.config.region})`, true);
+  return secrets.reduce((accumulator: Record<string, KeypaValue>, secret: { name: string, value: string, source: string }) => {
+    accumulator[secret.name] = new KeypaValue(secret.name, secret.value, `aws-secret-manager (${secret.source})`, true);
     return accumulator;
   }, {});
 }
