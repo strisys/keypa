@@ -3,12 +3,14 @@ import { SecretClient } from '@azure/keyvault-secrets';
 import { ProviderConfigType } from '../config.js';
 import { KeypaValue } from '../index.js';
 
+type AzureProviderConfigType = ProviderConfigType<'azure-keyvault'>;
+
 class KeyVaultStore {
   private _client: (SecretClient | null) = null;
-  private _options: ProviderConfigType<'azure-keyvault'>;
+  private _options: AzureProviderConfigType;
   private _url: string = '';
 
-  constructor(options: ProviderConfigType<'azure-keyvault'>) {
+  constructor(options: AzureProviderConfigType) {
     this._options = options;
   }
 
@@ -58,10 +60,10 @@ class KeyVaultStore {
  * Initializes the azure key-vault configuration.
  * @param config The configuration options.
  */
-export const fetch = async<P extends 'azure-keyvault'>(options: ProviderConfigType<P>): Promise<Record<string, KeypaValue>> => {
+export const fetch = async (options: AzureProviderConfigType): Promise<Record<string, KeypaValue>> => {
   const kv = new KeyVaultStore(options);
 
-  console.log(`loading 'azure key vault' secrets with options: ${JSON.stringify(options)}`)
+  console.log(`loading 'azure key vault' secrets with options: ${options.keyVaultName}`)
   const secrets = (await kv.getAll());
   console.log(`'azure key vault' secrets loaded successfully! ${JSON.stringify(secrets.map((s) => s.name))}`)
 

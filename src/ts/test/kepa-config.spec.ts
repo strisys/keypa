@@ -141,19 +141,19 @@ describe('KepaConfigBuilder', () => {
 
       const awsConfig = {
         region: 'us-east-1',
-        profile: 'playground'
+        ssoProfile: 'playground',
       }
 
       // Arrange
       builder.get(environments[0]).providers
         .set('dotenv', dotEnvConfig)
         .set('azure-keyvault', azureConfig)
-        .set('aws-secrets-manager', awsConfig);
+        .set('aws-secrets-manager', { ...awsConfig, secrets: `${environments[0]}/keypa/config` });
 
       builder.get(environments[1]).providers
         .set('dotenv', dotEnvConfig)
         .set('azure-keyvault', azureConfig)
-        .set('aws-secrets-manager', awsConfig);
+        .set('aws-secrets-manager', { ...awsConfig, secrets: `${environments[1]}/keypa/config` });
 
       const keypa = await builder.initialize(currentEnvironment)
 
@@ -169,7 +169,14 @@ describe('KepaConfigBuilder', () => {
 
       expect(valConfig.value).to.be.equal('12345');
       expect(valConfig.name).to.be.equal('KEYPA-TEST-SECRET');
+      expect(valConfig.source.includes('azure')).to.be.true;
       expect(valConfig.source.includes('kv-webappquickstart')).to.be.true;
+
+      valConfig = keypa.get(`AWS_KEYPA_TEST`);
+
+      expect(valConfig.value).to.be.equal('blueberry');
+      expect(valConfig.name).to.be.equal('AWS_KEYPA_TEST');
+      expect(valConfig.source.includes('aws')).to.be.true;
     });
   });
 });
