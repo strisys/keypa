@@ -3,10 +3,12 @@ import { Keypa, KeypaConfigBuilder, KeypaProviderConfig } from '../index.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Get the current module's file path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const getEnvFilePath = () => {
+  return path.resolve(__dirname, '.env-keypa');
+}
 
 describe('KepaConfigBuilder', () => {
   describe('configure', function () {
@@ -53,8 +55,10 @@ describe('KepaConfigBuilder', () => {
 
         Keypa.dispose();
 
+        const v = getEnvFilePath();
+
         const dotEnvConfig = {
-          path: path.resolve(__dirname, '.env'),
+          path: getEnvFilePath(),
           debug: true,
         }
 
@@ -89,7 +93,7 @@ describe('KepaConfigBuilder', () => {
         Keypa.dispose();
 
         const dotEnvConfig = {
-          path: path.resolve(__dirname, '.env'),
+          path: getEnvFilePath(),
           debug: true,
         }
 
@@ -134,7 +138,7 @@ describe('KepaConfigBuilder', () => {
         Keypa.dispose();
 
         const dotEnvConfig = {
-          path: path.resolve(__dirname, '.env'),
+          path: getEnvFilePath(),
           debug: true,
         }
 
@@ -182,4 +186,5 @@ describe('KepaConfigBuilder', () => {
         expect(valConfig.source.includes('aws')).to.be.true;
       });
     });
+  });
 });
