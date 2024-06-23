@@ -97,7 +97,7 @@ describe('KepaConfigBuilder', () => {
         }
 
         const azureConfig = {
-          keyVaultName: 'kv-webappquickstart',
+          keyVaultName: 'kv-keypa-development',
         }
 
         // Arrange
@@ -118,12 +118,15 @@ describe('KepaConfigBuilder', () => {
 
         expect(valConfig.value).to.be.equal('Keypa');
         expect(valConfig.name).to.be.equal('TEST_VALUE');
+        expect(valConfig.isSecret).to.be.false;
 
-        valConfig = keypa.get('KEYPA-TEST-SECRET');
+        valConfig = keypa.get('AZURE-KEYPA-TEST');
 
-        expect(valConfig.value).to.be.equal('12345');
-        expect(valConfig.name).to.be.equal('KEYPA-TEST-SECRET');
-        expect(valConfig.source.includes('kv-webappquickstart')).to.be.true;
+        expect(valConfig.name).to.be.equal('AZURE-KEYPA-TEST');
+        expect(valConfig.value).to.be.equal('banana');
+        expect(valConfig.source.includes('azure')).to.be.true;
+        expect(valConfig.source.includes('kv-keypa-development')).to.be.true;
+        expect(valConfig.isSecret).to.be.true;
       });
 
       it(`should be able to configure dotenv, azure key vault, and aws secret manager`, async () => {
@@ -142,7 +145,7 @@ describe('KepaConfigBuilder', () => {
         }
 
         const azureConfig = {
-          keyVaultName: 'kv-webappquickstart',
+          keyVaultName: 'kv-keypa-development',
         }
 
         const awsConfig = {
@@ -169,19 +172,22 @@ describe('KepaConfigBuilder', () => {
 
         expect(valConfig.value).to.be.equal('Keypa');
         expect(valConfig.name).to.be.equal('TEST_VALUE');
+        expect(valConfig.isSecret).to.be.false;
 
-        valConfig = keypa.get('KEYPA-TEST-SECRET');
+        valConfig = keypa.get('AZURE-KEYPA-TEST');
 
-        expect(valConfig.value).to.be.equal('12345');
-        expect(valConfig.name).to.be.equal('KEYPA-TEST-SECRET');
+        expect(valConfig.name).to.be.equal('AZURE-KEYPA-TEST');
+        expect(valConfig.value).to.be.equal('banana');
         expect(valConfig.source.includes('azure')).to.be.true;
-        expect(valConfig.source.includes('kv-webappquickstart')).to.be.true;
+        expect(valConfig.source.includes('kv-keypa-development')).to.be.true;
+        expect(valConfig.isSecret).to.be.true;
 
         valConfig = keypa.get(`AWS_KEYPA_TEST`);
 
-        expect(valConfig.value).to.be.equal('blueberry');
         expect(valConfig.name).to.be.equal('AWS_KEYPA_TEST');
+        expect(valConfig.value).to.be.equal('blueberry');
         expect(valConfig.source.includes('aws')).to.be.true;
+        expect(valConfig.isSecret).to.be.true;
       });
     });
   });
