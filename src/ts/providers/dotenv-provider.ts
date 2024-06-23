@@ -9,7 +9,7 @@ export const fetch = async (options: DotEnvProviderConfigType): Promise<Record<s
   const result = (config(options).parsed || {});
   console.log(`dotenv loaded successfully! ${JSON.stringify(result)}`)
 
-  const source = ((options.path) ? `dotenv (${options.path})` : 'dotenv');
+  const source = ((options?.path) ? `dotenv (${options.path})` : 'dotenv');
   const values: Record<string, KeypaValue> = {};
 
   Object.keys(result).forEach((key) => {

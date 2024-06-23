@@ -6,7 +6,7 @@ export type ProviderType = ('process.env' | 'dotenv' | 'azure-keyvault' | 'aws-s
 
 export type ProviderConfigType<P extends ProviderType> =
   P extends 'process.env' ? {} :
-  P extends 'dotenv' ? DotenvConfigOptions :
+  P extends 'dotenv' ? (DotenvConfigOptions | undefined) :
   P extends 'azure-keyvault' ? { keyVaultName: string, tokenCredentials?: (TokenCredential | Array<TokenCredential>) } :
   P extends 'aws-secrets-manager' ? { profile: string, secrets?: (string | Array<string>) } :
 never;

@@ -24,7 +24,7 @@ class SecretStore {
       console.log(`creating AWS secrets manager client ...`);
 
       const getCredentials = async (): Promise<any> => {
-        const config = {
+        let config = {
           profile: (this._options.profile || 'default')
         }
 
