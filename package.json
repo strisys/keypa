@@ -8,7 +8,7 @@
   },
   "types": "./src/js/index.d.ts",
   "type": "module",
-  "private": true,
+  "private": false,
   "scripts": {
     "postinstall": "npm-run-all test start",
     "clean-js": "rimraf \"./src/js\"",
@@ -20,7 +20,17 @@
     "test": "npm-run-all transpile mocha",
     "start": "npm-run-all transpile run"
   },
-  "keywords": [],
+  "keywords": [
+    "keypa",
+    "environment",
+    "variables",
+    "secrets",
+    "aws",
+    "azure",
+    "ssm",
+    "aws secrets manager",
+    "azure key vault"
+  ],
   "author": "keypa@strisys.com",
   "license": "MIT",
   "devDependencies": {
