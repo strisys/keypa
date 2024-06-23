@@ -26,7 +26,8 @@ class KeyVaultStore {
     try {
       console.log(`creating Azure key vault client (${this.url}) ...`);
 
-      const credentials = (this._options.tokenCredentials || [new AzureCliCredential(), new EnvironmentCredential(), new ManagedIdentityCredential()]);
+      let credentials = (this._options.tokenCredentials || [new AzureCliCredential(), new EnvironmentCredential(), new ManagedIdentityCredential()]);
+      credentials = ((Array.isArray(credentials)) ? credentials : [credentials])
 
       const credential = new ChainedTokenCredential(...credentials);
       this._client = new SecretClient(this.url, credential);
