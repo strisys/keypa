@@ -22,6 +22,10 @@ class KeypaProviderConfigCollection {
   }
 
   public set<T extends ProviderType>(type: T, config: ProviderConfigType<T>): KeypaProviderConfigCollection {
+    if (this.config.isReadOnly) {
+      return this
+    }
+
     this._inner.set(type, config);
     this._providerTypes.push(type);
     return this;
@@ -54,15 +58,21 @@ class KeypaProviderConfigCollection {
 
 export class KeypaProviderConfig {
   private readonly _providerConfigs: KeypaProviderConfigCollection;
+  private readonly _parent: KeypaConfigBuilder;
   private readonly _environment: string;
 
-  public constructor(environment: string) {
+  public constructor(builder: KeypaConfigBuilder, environment: string) {
     this._environment = environment;
     this._providerConfigs = new KeypaProviderConfigCollection(this);
+    this._parent = builder;
   }
 
   public get environment(): string {
     return this._environment;
+  }
+
+  public get isReadOnly(): boolean {
+    return this._parent.isReadOnly;
   }
 
   public get providerTypes(): Array<ProviderType> {
@@ -76,9 +86,10 @@ export class KeypaProviderConfig {
 
 export class KeypaConfigBuilder {
   private readonly _configs: Array<KeypaProviderConfig>;
+  private _isReadOnly: boolean = false;
 
   private constructor(environments: string[]) {
-    this._configs = environments.map((env) => new KeypaProviderConfig(env));
+    this._configs = environments.map((env) => new KeypaProviderConfig(this, env));
   }
 
   public static standard(): KeypaConfigBuilder {
@@ -92,6 +103,15 @@ export class KeypaConfigBuilder {
 
   public async initialize(environment: string): Promise<Keypa> {
     return Keypa.initialize(this, environment);
+  }
+
+  public get isReadOnly(): boolean {
+    return this._isReadOnly;
+  }
+
+  public setAsReadonly(): KeypaConfigBuilder {
+    this._isReadOnly = true;
+    return this;
   }
 
   public get environments(): Array<string> {

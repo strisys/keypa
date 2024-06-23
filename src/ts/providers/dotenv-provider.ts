@@ -1,25 +1,19 @@
 import { config } from 'dotenv';
-import { fetch as initializeProcessEnv } from './process-env-provider.js';
 import { KeypaValue } from '../index.js';
 import { ProviderConfigType } from '../config.js';
 
-/**
- * Initializes the 'dotenv' configuration.
- * @param config The configuration options.
- */
-export const fetch = async <P extends 'dotenv'>(options: ProviderConfigType<P>): Promise<Record<string, KeypaValue>> => {
-  const before = (await initializeProcessEnv());
+type DotEnvProviderConfigType = ProviderConfigType<'dotenv'>;
 
+export const fetch = async (options: DotEnvProviderConfigType): Promise<Record<string, KeypaValue>> => {
   console.log(`loading dotenv configuration with options: ${JSON.stringify(options)}`)
   const result = (config(options).parsed || {});
   console.log(`dotenv loaded successfully! ${JSON.stringify(result)}`)
 
+  const source = ((options.path) ? `dotenv (${options.path})` : 'dotenv');
   const values: Record<string, KeypaValue> = {};
 
   Object.keys(result).forEach((key) => {
-    if (!before[key]) {
-      values[key] = (new KeypaValue(key, result[key], `dotenv (${options.path})`));
-    }
+    values[key] = (new KeypaValue(key, result[key], source, false));
   });
 
   return values;

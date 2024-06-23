@@ -45,7 +45,7 @@ class SecretStore {
       return this._client;
     }
     catch (err) {
-      const message = `Failed to create AWS secrets manager created. ${err}`;
+      const message = `Failed to create AWS secrets manager. ${err}`;
       console.error(message);
 
       throw new Error(message);
@@ -73,9 +73,11 @@ class SecretStore {
             secrets.push(secret);
           }
         }
-      } catch (error) {
-        console.error('Error retrieving list of all secrets.  Its possible the current user does not have the rights to list all secrents.  Change the configuration to pass in specific secret names.', error);
-        throw error;
+      } 
+      catch (error) {
+        const message = `Error retrieving list of all secrets.  Its possible the current user does not have the rights to list all secrents.  Change the configuration to pass in specific secrets to extract values from. ${error}`; 
+        console.error(error);
+        throw new Error(message);
       }
     } while (nextToken);
 

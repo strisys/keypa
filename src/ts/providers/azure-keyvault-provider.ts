@@ -37,7 +37,7 @@ class KeyVaultStore {
       return this._client;
     }
     catch (err) {
-      const message = `Failed to create Azure Key Vault client (${this.url}). Could not create secret client. ${err}`;
+      const message = `Failed to create Azure Key Vault client (${this.url}). ${err}`;
       console.error(message);
 
       throw new Error(message);
