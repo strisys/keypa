@@ -4,6 +4,7 @@ export class KeypaValue {
   private readonly _value: any;
   private readonly _source: string;
   private readonly _isSecret: boolean;
+  private readonly _duplicates: Array<KeypaValue> = [];
 
   public constructor(name: string, value: any, source: string, isSecret: boolean) {
     this._name = name;
@@ -28,7 +29,20 @@ export class KeypaValue {
     return this._isSecret;
   }
 
-  public toJson(): {} {
+  public addDuplicate(value: KeypaValue): KeypaValue {
+    if ((value) && (value !== this) && (this.name === value.name)) {
+      this._duplicates.push(value);
+      console.warn(`Duplicate found: ${value.toString()}.  Skipping...`);
+    }
+
+    return this;
+  }
+
+  public get duplicates(): Array<KeypaValue> {
+    return [...this._duplicates];
+  }
+
+  private get maskedValue(): string {
     let value = `${this._value}`;
 
     if ((!this._isSecret) && (value.length >= 45)) {
@@ -39,11 +53,15 @@ export class KeypaValue {
       value = '*'.repeat(value.length);;
     }
 
-    return { name: this._name, source: this._source, isSecret: this._isSecret, value };
+    return value;
+  }
+
+  public toJson(): {} {
+    return { name: this._name, source: this._source, isSecret: this._isSecret, value: this.maskedValue };
   }
 
   public toString(): string {
-    return `name:=${this._name},value:=${this._value},source:=${this._source}`;
+    return `name:=${this._name},source:=${this._source},value:=${this.maskedValue}`;
   }
 }
 

@@ -81,12 +81,15 @@ export class Keypa {
 
     const hydrate = (values: Record<string, KeypaValue>) => {
       Object.keys(values).forEach((key) => {
+        const value = values[key];
+
         if (!result[key]) {
-          result[key] = values[key];
+          result[key] = value;
           return;
         }
 
-        console.warn(`Duplicate key found: ${key}.  Skipping...`);
+        result[key].addDuplicate(value);
+        
       });
     }
 
