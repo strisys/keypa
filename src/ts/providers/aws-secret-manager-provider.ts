@@ -31,36 +31,8 @@ class SecretStore {
       profile: (this._options.profile || 'default')
     }
 
-    let provider: any;
-
-    try {
-      console.log(`attempting to get credentials from SSO (${config.profile}) ...`);
-      provider = fromSSO(config);
-      console.log(`using credentials from SSO (${config.profile})`);
-    }
-    catch (error) {
-      console.warn(`failed to get credentials from SSO (${config.profile}).  attempting to get credentials from ini. ${error}`);
-    }
-
-    if (!provider) {
-      try {
-        console.log(`attempting to get credentials from ini (${config.profile}) ...`);
-        provider = fromIni(config);
-        console.log(`using credentials from ini (${config.profile})`);
-      }
-      catch (error) {
-        console.warn(`failed to get credentials from ini (${config.profile}). ${error}`);
-      }
-    }
-
-    if ((!provider) && (!isRunningInAWS())) {
-      throw new Error(`Failed to get credentials from SSO or ini (${config.profile}).`)
-    }
-
-    //if (!provider) {
-    console.log(`using default credential provider chain ...`);
-    provider = defaultProvider(config);
-    //}
+    console.log(`using default credential provider chain (${config.profile}) ...`);
+    const provider = defaultProvider(config);
 
     return (await provider());
   }
