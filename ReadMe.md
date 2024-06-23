@@ -11,12 +11,12 @@ const builder = KeypaConfigBuilder.configure('development', 'production');
 // set the providers for values
 builder.get('development').providers
        .set('dotenv': {})
-       .set('azure-keyvault', { name: 'kv-myapp-development' }})
+       .set('azure-keyvault', { keyVaultName: 'kv-myapp-development' }})
        .set('aws-secret-manager', { region: 'us-east-1' }})
 
 builder.get('production').providers
        .set('dotenv': {})
-       .set('azure-keyvault', { name: 'kv-myapp-production' }})
+       .set('azure-keyvault', { keyVaultName: 'kv-myapp-production' }})
        .set('aws-secret-manager', { region: 'us-east-2' }})
 
 // initialize 
