@@ -34,7 +34,7 @@ console.log(dbConfig.source);      // aws-secret-manager
 
 ### Providers
 
-Currently the libary only supports [dotenv](https://github.com/motdotla/dotenv), [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/), and [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/) as providers.  With respect to the last two, access is only supported using SSO via their respective command line interfaces.
+A provider is that which from environment variables and secrets can be fetched from.  These are configured in example code in the last section by environment.  Currently the libary supports [dotenv](https://github.com/motdotla/dotenv), [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/), and [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/) as providers.  With respect to the last two, access is secured by the cloud provider and the only supported means is SSO via their respective command line interfaces.
 
 **Azure CLI SSO**
 
