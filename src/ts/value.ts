@@ -1,4 +1,6 @@
 
+const MAX_VALUE_LENGTH = 30;
+
 export class KeypaValue {
   private readonly _name: string;
   private readonly _value: any;
@@ -42,26 +44,31 @@ export class KeypaValue {
     return [...this._duplicates];
   }
 
-  private get maskedValue(): string {
-    let value = `${this._value}`;
+  public get hasDuplicates(): boolean {
+    return (this._duplicates.length > 0);
+  }
 
-    if ((!this._isSecret) && (value.length >= 45)) {
-      value = `${value.substring(0, 42)}...`;
+  private tryGetMaskedValue(): string {
+    let value = `${this._value}`;
+    const isLongValue = (value.length >= MAX_VALUE_LENGTH);
+
+    if ((!this._isSecret) && (isLongValue)) {
+      value = `${value.substring(0, (MAX_VALUE_LENGTH - 3))}...`;
     }
 
     if (this._isSecret) {
-      value = '*'.repeat(value.length);;
+      value = '*'.repeat(((isLongValue) ? (MAX_VALUE_LENGTH - 3) : value.length));
     }
 
     return value;
   }
 
   public toJson(): {} {
-    return { name: this._name, source: this._source, isSecret: this._isSecret, value: this.maskedValue };
+    return { name: this._name, source: this._source, isSecret: this._isSecret, duplicates: this._duplicates.length, value: this.tryGetMaskedValue() };
   }
 
   public toString(): string {
-    return `name:=${this._name},source:=${this._source},value:=${this.maskedValue}`;
+    return `name:=${this._name},source:=${this._source},value:=${this.tryGetMaskedValue()},isSecret:=${this._isSecret},duplicates:=${this._duplicates.length}`;
   }
 }
 

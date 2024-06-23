@@ -8,8 +8,8 @@ export type ProviderConfigType<P extends ProviderType> =
   P extends 'process.env' ? {} :
   P extends 'dotenv' ? DotenvConfigOptions :
   P extends 'azure-keyvault' ? { keyVaultName: string, tokenCredentials?: (TokenCredential | Array<TokenCredential>) } :
-  P extends 'aws-secrets-manager' ? { secrets?: (string | Array<string>), ssoProfile?: string } :
-  never;
+  P extends 'aws-secrets-manager' ? { profile: string, secrets?: (string | Array<string>) } :
+never;
 
 
 class KeypaProviderConfigCollection {

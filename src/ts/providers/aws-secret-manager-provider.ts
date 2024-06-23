@@ -1,11 +1,22 @@
 
 import { ProviderConfigType } from '../config.js';
 import { KeypaValue } from '../index.js';
-import AWS from 'aws-sdk';
-import { fromSSO } from '@aws-sdk/credential-provider-sso'; // Import the AwsCredentialIdentity type
+import { fromSSO } from '@aws-sdk/credential-provider-sso';
+import { fromIni } from '@aws-sdk/credential-providers';
+import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { SecretsManagerClient, ListSecretsCommand, GetSecretValueCommand, SecretListEntry, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 
 type AwsProviderConfigType = ProviderConfigType<'aws-secrets-manager'>;
+
+const isRunningInAWS = (): boolean => {
+  return !!process.env.AWS_EXECUTION_ENV ||
+    !!process.env.AWS_REGION ||
+    !!process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    !!process.env.ECS_CONTAINER_METADATA_URI ||
+    !!process.env.ECS_CONTAINER_METADATA_URI_V4 ||
+    !!process.env.KUBERNETES_SERVICE_HOST ||
+    require('fs').existsSync('/var/run/secrets/kubernetes.io/serviceaccount/token');
+}
 
 class SecretStore {
   private _client: (SecretsManagerClient | null) = null;
@@ -16,14 +27,40 @@ class SecretStore {
   }
 
   private async getCredentials(): Promise<any> {
-    const profile = (this._options.ssoProfile || 'default');
-    console.log(`get credentials for AWS secrets manager client (profile=${profile})...`);
+    const config = {
+      profile: (this._options.profile || 'default')
+    }
 
-    const ssoCredentialProvider = fromSSO({
-      profile: (this._options.ssoProfile || 'default')
-    });
+    let provider: any;
 
-    return (await ssoCredentialProvider());
+    try {
+      console.log(`attempting to get credentials from SSO (${config.profile}) ...`);
+      provider = fromSSO(config);
+      console.log(`using credentials from SSO (${config.profile})`);
+    }
+    catch (error) {
+      console.warn(`failed to get credentials from SSO (${config.profile}).  attempting to get credentials from ini. ${error}`);
+    }
+
+    if (!provider) {
+      try {
+        console.log(`attempting to get credentials from ini (${config.profile}) ...`);
+        provider = fromIni(config);
+        console.log(`using credentials from ini (${config.profile})`);
+      }
+      catch (error) {
+        console.warn(`failed to get credentials from ini (${config.profile}). ${error}`);
+      }
+    }
+
+    if ((!provider) && (!isRunningInAWS())) {
+      throw new Error(`Failed to get credentials from SSO or ini (${config.profile}).`)
+    }
+
+    console.log(`using default credential provider chain ...`);
+    provider = defaultProvider();
+
+    return (await provider());
   }
 
   private async tryGetClient(): Promise<SecretsManagerClient> {
@@ -44,8 +81,8 @@ class SecretStore {
 
       return this._client;
     }
-    catch (err) {
-      const message = `Failed to create AWS secrets manager. ${err}`;
+    catch (error) {
+      const message = `Failed to create AWS secrets manager. ${error}`;
       console.error(message);
 
       throw new Error(message);
@@ -73,9 +110,9 @@ class SecretStore {
             secrets.push(secret);
           }
         }
-      } 
+      }
       catch (error) {
-        const message = `Error retrieving list of all secrets.  Its possible the current user does not have the rights to list all secrents.  Change the configuration to pass in specific secrets to extract values from. ${error}`; 
+        const message = `Error retrieving list of all secrets.  Its possible the current user does not have the rights to list all secrents.  Change the configuration to pass in specific secrets to extract values from. ${error}`;
         console.error(error);
         throw new Error(message);
       }

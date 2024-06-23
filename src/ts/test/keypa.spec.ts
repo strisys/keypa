@@ -146,8 +146,7 @@ describe('KepaConfigBuilder', () => {
         }
 
         const awsConfig = {
-          region: 'us-east-1',
-          ssoProfile: 'playground',
+          profile: 'playground',
         }
 
         // Arrange
