@@ -7,7 +7,7 @@
     "**/.editorconfig": true,
     "**/.eslintrc.js": true,
     "**/.gitignore": true,
-    "**/tsconfig.json": false,
+    "**/tsconfig.json": true,
     "**/*.md": false,
     "**/*.env": false
   }
