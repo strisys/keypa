@@ -4,7 +4,7 @@ import { ProviderConfigType } from '../config.js';
 /**
  * Initializes the 'process.env' configuration.
  */
-export const initialize = async (config: ProviderConfigType<'process.env'> = {}): Promise<Record<string, KeypaValue>> => {
+export const fetch = async (config: ProviderConfigType<'process.env'> = {}): Promise<Record<string, KeypaValue>> => {
   const values: Record<string, KeypaValue> = {};
 
   Object.keys(process.env).forEach((key) => {

@@ -58,12 +58,12 @@ class KeyVaultStore {
  * Initializes the azure key-vault configuration.
  * @param config The configuration options.
  */
-export const initialize = async<P extends 'azure-keyvault'>(options: ProviderConfigType<P>): Promise<Record<string, KeypaValue>> => {
+export const fetch = async<P extends 'azure-keyvault'>(options: ProviderConfigType<P>): Promise<Record<string, KeypaValue>> => {
   const kv = new KeyVaultStore(options);
 
-  console.log(`loading 'azure key vault' configuration with options: ${JSON.stringify(options)}`)
+  console.log(`loading 'azure key vault' secrets with options: ${JSON.stringify(options)}`)
   const secrets = (await kv.getAll());
-  console.log(`'azure key vault' loaded successfully! ${JSON.stringify(secrets.map((s) => s.name))}`)
+  console.log(`'azure key vault' secrets loaded successfully! ${JSON.stringify(secrets.map((s) => s.name))}`)
 
   const values: Record<string, KeypaValue> = {};
 

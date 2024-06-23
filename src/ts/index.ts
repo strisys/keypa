@@ -1,5 +1,5 @@
 import { KeypaConfigBuilder, KeypaProviderConfig, ProviderType } from './config.js';
-import { getInitializer } from './providers/index.js';
+import { getProviderFetch } from './providers/index.js';
 
 
 export { KeypaConfigBuilder, KeypaProviderConfig };
@@ -171,14 +171,14 @@ export class Keypa {
       const envConfig = builder.get(env);
 
       // Initialize the process.env provider
-      let fn = getInitializer('process.env');
+      let fn = getProviderFetch('process.env');
       let values = (await fn());
       hydrate(values);
 
       // Initialize the other providers
       for (const providerType of envConfig.providerTypes) {
         const config = envConfig.providers.get(providerType);
-        hydrate(await getInitializer(providerType)(config));
+        hydrate(await getProviderFetch(providerType)(config));
       }
 
       instance._envCache = new KeypaValueCache(env, result);

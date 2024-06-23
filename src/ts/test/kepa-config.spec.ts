@@ -119,5 +119,57 @@ describe('KepaConfigBuilder', () => {
       expect(valConfig.name).to.be.equal('KEYPA-TEST-SECRET');
       expect(valConfig.source.includes('kv-webappquickstart')).to.be.true;
     });
+
+    it(`should be able to configure dotenv, azure key vault, and aws secret manager`, async () => {
+      this.timeout(15000);
+
+      // Assemble
+      const environments = ['development', 'production'];
+      const currentEnvironment = environments[0];
+      const builder = KeypaConfigBuilder.configure(environments[0], environments[1]);
+
+      Keypa.dispose();
+
+      const dotEnvConfig = {
+        path: path.resolve(__dirname, '.env'),
+        debug: true,
+      }
+
+      const azureConfig = {
+        keyVaultName: 'kv-webappquickstart',
+      }
+
+      const awsConfig = {
+        region: 'us-east-1',
+        profile: 'playground'
+      }
+
+      // Arrange
+      builder.get(environments[0]).providers
+        .set('dotenv', dotEnvConfig)
+        .set('azure-keyvault', azureConfig)
+        .set('aws-secrets-manager', awsConfig);
+
+      builder.get(environments[1]).providers
+        .set('dotenv', dotEnvConfig)
+        .set('azure-keyvault', azureConfig)
+        .set('aws-secrets-manager', awsConfig);
+
+      const keypa = await builder.initialize(currentEnvironment)
+
+      expect(keypa).to.be.instanceOf(Keypa);
+      expect(keypa === Keypa.current).to.be.true;
+
+      let valConfig = keypa.get('TEST_VALUE');
+
+      expect(valConfig.value).to.be.equal('Keypa');
+      expect(valConfig.name).to.be.equal('TEST_VALUE');
+
+      valConfig = keypa.get('KEYPA-TEST-SECRET');
+
+      expect(valConfig.value).to.be.equal('12345');
+      expect(valConfig.name).to.be.equal('KEYPA-TEST-SECRET');
+      expect(valConfig.source.includes('kv-webappquickstart')).to.be.true;
+    });
   });
 });

@@ -16,7 +16,7 @@
     "tsc": "tsc",
     "transpile": "npm-run-all clean-js copy-env tsc",
     "run": "node ./src/js/index.js",
-    "mocha": "mocha --exit --reporter tap \"./src/js/test/**/*.spec.js\"",
+    "mocha": "mocha --timeout 9000000 --exit --reporter tap \"./src/js/test/**/*.spec.js\"",
     "test": "npm-run-all transpile mocha",
     "start": "npm-run-all transpile run"
   },
@@ -37,8 +37,12 @@
     "typescript": "^5.5.2"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.600.0",
+    "@aws-sdk/client-sso": "^3.598.0",
+    "@aws-sdk/credential-provider-sso": "^3.598.0",
     "@azure/identity": "^4.3.0",
     "@azure/keyvault-secrets": "^4.8.0",
+    "aws-sdk": "^2.1646.0",
     "dotenv": "~16.4.5"
   }
 }

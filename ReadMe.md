@@ -12,14 +12,14 @@ const builder = KeypaConfigBuilder.configure('development', 'production');
 builder.get('development').providers
        .set('dotenv': {})
        .set('azure-keyvault', { keyVaultName: 'kv-myapp-development' }})
-       .set('aws-secret-manager', { region: 'us-east-1' }})
+       .set('aws-secrets-manager', { region: 'us-east-1' }})
 
 builder.get('production').providers
        .set('dotenv': {})
        .set('azure-keyvault', { keyVaultName: 'kv-myapp-production' }})
-       .set('aws-secret-manager', { region: 'us-east-2' }})
+       .set('aws-secrets-manager', { region: 'us-east-2' }})
 
-// initialize 
+// fetch variables and secrets for a particular environment
 const kepa = builder.initialize('development');
 
 const debugVal = kepa.get('debug').value;  

@@ -2,13 +2,13 @@ import { TokenCredential } from '@azure/identity';
 import { DotenvConfigOptions } from 'dotenv';
 import { Keypa } from './index.js';
 
-export type ProviderType = ('process.env' | 'dotenv' | 'azure-keyvault' | 'aws-secret-manager');
+export type ProviderType = ('process.env' | 'dotenv' | 'azure-keyvault' | 'aws-secrets-manager');
 
 export type ProviderConfigType<P extends ProviderType> =
   P extends 'process.env' ? {} :
   P extends 'dotenv' ? DotenvConfigOptions :
   P extends 'azure-keyvault' ? { keyVaultName: string, tokenCredentials?: Array<TokenCredential> } :
-  P extends 'aws-secret-manager' ? { region: string } :
+  P extends 'aws-secrets-manager' ? { region: string, profile?: string } :
   never;
 
 
