@@ -37,9 +37,9 @@ console.log(dbConfig.source);      // aws-secret-manager
 
 ### Providers
 
-A provider is that which from environment variables and secrets can be sourced from and current the libary supports [dotenv](https://github.com/motdotla/dotenv), [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/), and [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/).  These providers are configured in example code in the last section for each environment.  
+A provider is that which from environment variables and secrets can be sourced from and current the libary supports [dotenv](https://github.com/motdotla/dotenv), [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/), and [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/).  These providers are configured in example code in the last section for each environment.
 
-With respect to [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/), and [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/), access is secured by the cloud provider and the necessary configurations will need to be set.  Below are sample CLI commands for logging into Azure and AWS respectively using SSO when doing local development.
+With respect to [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/) and [AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/), access is secured by each cloud provider and the necessary configurations will need to be set.  Below are sample CLI commands for logging into Azure and AWS respectively using SSO when doing local development.
 
 **Azure CLI SSO**
 
