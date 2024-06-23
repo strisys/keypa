@@ -57,8 +57,10 @@ class SecretStore {
       throw new Error(`Failed to get credentials from SSO or ini (${config.profile}).`)
     }
 
+    //if (!provider) {
     console.log(`using default credential provider chain ...`);
-    provider = defaultProvider();
+    provider = defaultProvider(config);
+    //}
 
     return (await provider());
   }
