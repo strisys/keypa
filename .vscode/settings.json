@@ -1,0 +1,14 @@
+{
+  "files.exclude": {
+    "**/js": true,
+    "**/scripts": true,
+    "**/public": true,
+    "**/.npmrc": true,
+    "**/.editorconfig": true,
+    "**/.eslintrc.js": true,
+    "**/.gitignore": true,
+    "**/tsconfig.json": false,
+    "**/*.md": false,
+    "**/*.env": false
+  }
+}

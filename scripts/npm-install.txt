@@ -1,0 +1,3 @@
+ 
+npm install @types/chai @types/mocha @types/node chai copyfiles cross-env dotenv mocha npm-run-all rimraf ts-node typescript --save-dev 
+npm install cross-fetch yargs --save

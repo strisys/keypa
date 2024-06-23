@@ -1,0 +1,44 @@
+{
+  "name": "keypa",
+  "version": "0.0.0",
+  "description": "Simplify the retrieval and debugging of environment variables and secret sourced from various providers.",
+  "main": "./src/js/index.js",
+  "exports": {
+    ".": "./src/js/index.js"
+  },
+  "types": "./src/js/index.d.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm-run-all test start",
+    "clean-js": "rimraf \"./src/js\"",
+    "copy-env": "copyfiles -u 2 \"./src/ts/**/.env\" \"./src/js\"",
+    "tsc": "tsc",
+    "transpile": "npm-run-all clean-js copy-env tsc",
+    "run": "node ./src/js/index.js",
+    "mocha": "mocha --exit --reporter tap \"./src/js/test/**/*.spec.js\"",
+    "test": "npm-run-all transpile mocha",
+    "start": "npm-run-all transpile run"
+  },
+  "keywords": [],
+  "author": "keypa@strisys.com",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "~4.3.5",
+    "@types/mocha": "~10.0.1",
+    "@types/node": "~20.5.0",
+    "chai": "~4.3.7",
+    "copyfiles": "~2.4.1",
+    "cross-env": "~7.0.3",
+    "mocha": "~10.2.0",
+    "npm-run-all": "~4.1.5",
+    "rimraf": "~5.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.3.0",
+    "@azure/keyvault-secrets": "^4.8.0",
+    "dotenv": "~16.4.5"
+  }
+}
