@@ -18,7 +18,7 @@ export const fetch = async <P extends 'dotenv'>(options: ProviderConfigType<P>):
 
   Object.keys(result).forEach((key) => {
     if (!before[key]) {
-      values[key] = (new KeypaValue(key, result[key], 'dotenv'));
+      values[key] = (new KeypaValue(key, result[key], `dotenv (${options.path})`));
     }
   });
 

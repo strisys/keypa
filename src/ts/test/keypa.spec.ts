@@ -1,13 +1,12 @@
 import { expect } from 'chai';
-import { Keypa, KeypaConfigBuilder, KeypaProviderConfig } from '../index.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { Keypa, KeypaConfigBuilder, KeypaProviderConfig } from '../index.js';
 
 const getEnvFilePath = () => {
-  return path.resolve(__dirname, '.env-keypa');
+  const filename = fileURLToPath(import.meta.url);
+  const dirname = path.dirname(filename);
+  return path.resolve(dirname, '.env-keypa');
 }
 
 describe('KepaConfigBuilder', () => {
@@ -79,7 +78,7 @@ describe('KepaConfigBuilder', () => {
 
         expect(valConfig.value).to.be.equal('Keypa');
         expect(valConfig.name).to.be.equal('TEST_VALUE');
-        expect(valConfig.source).to.be.equal('dotenv');
+        expect(valConfig.source.includes('.env')).to.be.true;
       });
 
       it(`should be able to configure dotenv and azure key vault`, async () => {
