@@ -14,16 +14,6 @@ class SecretStore {
     this._options = options;
   }
 
-  private async getCredentials(): Promise<any> {
-    const config = {
-      profile: (this._options.profile || 'default')
-    }
-
-    console.log(`using default credential provider chain (${config.profile}) ...`);
-    const provider = defaultProvider(config);
-
-    return (await provider());
-  }
 
   private async tryGetClient(): Promise<SecretsManagerClient> {
     if (this._client) {
@@ -33,10 +23,20 @@ class SecretStore {
     try {
       console.log(`creating AWS secrets manager client ...`);
 
-      const credentials = (await this.getCredentials());
+      const getCredentials = async (): Promise<any> => {
+        const config = {
+          profile: (this._options.profile || 'default')
+        }
+
+        // https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/migrate-credential-providers.html
+        console.log(`using default credential provider chain (${config.profile}) ...`);
+        const provider = defaultProvider(config);
+
+        return (await provider());
+      }
 
       this._client = new SecretsManagerClient({
-        credentials,
+        credentials: (await getCredentials())
       });
 
       console.log(`AWS secrets manager created successfully!`);
