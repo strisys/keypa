@@ -1,22 +1,10 @@
 
 import { ProviderConfigType } from '../config.js';
 import { KeypaValue } from '../index.js';
-import { fromSSO } from '@aws-sdk/credential-provider-sso';
-import { fromIni } from '@aws-sdk/credential-providers';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { SecretsManagerClient, ListSecretsCommand, GetSecretValueCommand, SecretListEntry, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 
 type AwsProviderConfigType = ProviderConfigType<'aws-secrets-manager'>;
-
-const isRunningInAWS = (): boolean => {
-  return !!process.env.AWS_EXECUTION_ENV ||
-    !!process.env.AWS_REGION ||
-    !!process.env.AWS_LAMBDA_FUNCTION_NAME ||
-    !!process.env.ECS_CONTAINER_METADATA_URI ||
-    !!process.env.ECS_CONTAINER_METADATA_URI_V4 ||
-    !!process.env.KUBERNETES_SERVICE_HOST ||
-    require('fs').existsSync('/var/run/secrets/kubernetes.io/serviceaccount/token');
-}
 
 class SecretStore {
   private _client: (SecretsManagerClient | null) = null;
