@@ -2,7 +2,7 @@
 
 ## Overview
 
-This library's purpose is to help simplify the retrieval and debugging of environment variables and secret sourced from various providers.
+This library's purpose is to help simplify the retrieval and debugging of environment variables and secrets sourced from various providers.
 
 ```typescript
 // build configurations for each environment
