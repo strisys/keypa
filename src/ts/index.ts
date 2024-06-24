@@ -14,7 +14,6 @@ export class Keypa {
 
   private constructor(builder: KeypaConfigBuilder) {
     this._builder = builder;
-    Keypa._instance = this;
   }
 
   public log(format: ('json' | 'table')): Keypa {
@@ -126,11 +125,18 @@ export class Keypa {
         }
 
         result[key].addDuplicate(value);
-
       });
     }
 
+    let isInitializing = false;
+
     const initializeEnv = async (env: string) => {
+      if (isInitializing) {
+        return
+      }
+
+      isInitializing = false
+
       console.info(`Initializing Keypa for environment: ${env}`);
       const envConfig = builder.get(env);
 
@@ -146,6 +152,7 @@ export class Keypa {
       }
 
       instance._envCache = new KeypaValueCache(env, result);
+      Keypa._instance = instance;
     };
 
     await initializeEnv(environment);
