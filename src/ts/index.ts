@@ -86,7 +86,21 @@ export class Keypa {
     return Keypa._instance;
   }
 
-  public static isInitialized(): boolean {
+  public static reinitialize(): Keypa {
+    if (!Keypa._instance) {
+      throw new Error('Failed to reinitialize.  Keypa is was never initialized.');
+    }
+
+    const builder = Keypa._instance._builder;
+    const environment = Keypa._instance.environment;
+
+    Keypa.dispose();
+    Keypa.initialize(builder, environment);
+
+    return Keypa._instance;
+  }
+
+  public static get isInitialized(): boolean {
     return (Keypa._instance !== null);
   }
 
