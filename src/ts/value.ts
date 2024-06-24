@@ -34,7 +34,7 @@ export class KeypaValue {
   public addDuplicate(value: KeypaValue): KeypaValue {
     if ((value) && (value !== this) && (this.name === value.name)) {
       this._duplicates.push(value);
-      console.warn(`Duplicate found: ${value.toString()}.  Skipping...`);
+      console.warn(`Duplicate found: ${value.toString()}.`);
     }
 
     return this;
