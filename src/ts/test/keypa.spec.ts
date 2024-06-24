@@ -73,17 +73,21 @@ describe('KepaConfigBuilder', () => {
         builder.get(environments[1]).providers
           .set('dotenv', dotEnvConfig);
 
-        const keypa = await builder.initialize(currentEnvironment)
+        try {
+          const keypa = await builder.initialize(currentEnvironment)
 
-        expect(keypa).to.be.instanceOf(Keypa);
-        expect(keypa === Keypa.current).to.be.true;
+          expect(keypa).to.be.instanceOf(Keypa);
+          expect(keypa === Keypa.current).to.be.true;
 
-        // Assert
-        const valConfig = keypa.get('TEST_VALUE');
+          const valConfig = keypa.get('TEST_VALUE');
 
-        expect(valConfig.value).to.be.equal('Keypa');
-        expect(valConfig.name).to.be.equal('TEST_VALUE');
-        expect(valConfig.source.includes('.env')).to.be.true;
+          expect(valConfig.value).to.be.equal('Keypa');
+          expect(valConfig.name).to.be.equal('TEST_VALUE');
+          expect(valConfig.source.includes('.env')).to.be.true;
+        }
+        finally {
+          Keypa.dispose();
+        }
       });
 
       it(`should be able to configure dotenv and azure key vault`, async () => {
@@ -118,31 +122,36 @@ describe('KepaConfigBuilder', () => {
           .set('dotenv', dotEnvConfig)
           .set('azure-keyvault', azureConfig);
 
-        const keypa = await builder.initialize(currentEnvironment)
+        try {
+          const keypa = await builder.initialize(currentEnvironment)
 
-        expect(keypa).to.be.instanceOf(Keypa);
-        expect(keypa === Keypa.current).to.be.true;
+          expect(keypa).to.be.instanceOf(Keypa);
+          expect(keypa === Keypa.current).to.be.true;
 
-        let valConfig = keypa.get('TEST_VALUE');
+          let valConfig = keypa.get('TEST_VALUE');
 
-        expect(valConfig.value).to.be.equal('Keypa');
-        expect(valConfig.name).to.be.equal('TEST_VALUE');
-        expect(valConfig.isSecret).to.be.false;
+          expect(valConfig.value).to.be.equal('Keypa');
+          expect(valConfig.name).to.be.equal('TEST_VALUE');
+          expect(valConfig.isSecret).to.be.false;
 
-        valConfig = keypa.get('AZURE-KEYPA-TEST');
+          valConfig = keypa.get('AZURE-KEYPA-TEST');
 
-        expect(valConfig.name).to.be.equal('AZURE-KEYPA-TEST');
-        expect(valConfig.value).to.be.equal('banana');
-        expect(valConfig.source.includes('azure')).to.be.true;
-        expect(valConfig.source.includes('kv-keypa-development')).to.be.true;
-        expect(valConfig.isSecret).to.be.true;
+          expect(valConfig.name).to.be.equal('AZURE-KEYPA-TEST');
+          expect(valConfig.value).to.be.equal('banana');
+          expect(valConfig.source.includes('azure')).to.be.true;
+          expect(valConfig.source.includes('kv-keypa-development')).to.be.true;
+          expect(valConfig.isSecret).to.be.true;
+        }
+        finally {
+          Keypa.dispose();
+        }
       });
 
       it(`should be able to configure dotenv, azure key vault, and aws secret manager`, async () => {
         if (!isLocal()) {
           return;
         }
-        
+
         this.timeout(15000);
 
         // Assemble
@@ -176,31 +185,36 @@ describe('KepaConfigBuilder', () => {
           .set('azure-keyvault', azureConfig)
           .set('aws-secrets-manager', { ...awsConfig, secrets: `${environments[1]}/keypa/config` });
 
-        const keypa = await builder.initialize(currentEnvironment)
+        try {
+          const keypa = await builder.initialize(currentEnvironment)
 
-        expect(keypa).to.be.instanceOf(Keypa);
-        expect(keypa === Keypa.current).to.be.true;
+          expect(keypa).to.be.instanceOf(Keypa);
+          expect(keypa === Keypa.current).to.be.true;
 
-        let valConfig = keypa.get('TEST_VALUE');
+          let valConfig = keypa.get('TEST_VALUE');
 
-        expect(valConfig.value).to.be.equal('Keypa');
-        expect(valConfig.name).to.be.equal('TEST_VALUE');
-        expect(valConfig.isSecret).to.be.false;
+          expect(valConfig.value).to.be.equal('Keypa');
+          expect(valConfig.name).to.be.equal('TEST_VALUE');
+          expect(valConfig.isSecret).to.be.false;
 
-        valConfig = keypa.get('AZURE-KEYPA-TEST');
+          valConfig = keypa.get('AZURE-KEYPA-TEST');
 
-        expect(valConfig.name).to.be.equal('AZURE-KEYPA-TEST');
-        expect(valConfig.value).to.be.equal('banana');
-        expect(valConfig.source.includes('azure')).to.be.true;
-        expect(valConfig.source.includes('kv-keypa-development')).to.be.true;
-        expect(valConfig.isSecret).to.be.true;
+          expect(valConfig.name).to.be.equal('AZURE-KEYPA-TEST');
+          expect(valConfig.value).to.be.equal('banana');
+          expect(valConfig.source.includes('azure')).to.be.true;
+          expect(valConfig.source.includes('kv-keypa-development')).to.be.true;
+          expect(valConfig.isSecret).to.be.true;
 
-        valConfig = keypa.get(`AWS_KEYPA_TEST`);
+          valConfig = keypa.get(`AWS_KEYPA_TEST`);
 
-        expect(valConfig.name).to.be.equal('AWS_KEYPA_TEST');
-        expect(valConfig.value).to.be.equal('blueberry');
-        expect(valConfig.source.includes('aws')).to.be.true;
-        expect(valConfig.isSecret).to.be.true;
+          expect(valConfig.name).to.be.equal('AWS_KEYPA_TEST');
+          expect(valConfig.value).to.be.equal('blueberry');
+          expect(valConfig.source.includes('aws')).to.be.true;
+          expect(valConfig.isSecret).to.be.true;
+        }
+        finally {
+          Keypa.dispose();
+        }
       });
     });
   });

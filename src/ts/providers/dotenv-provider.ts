@@ -7,6 +7,14 @@ type DotEnvProviderConfigType = ProviderConfigType<'dotenv'>;
 export const fetch = async (options: DotEnvProviderConfigType): Promise<Record<string, KeypaValue>> => {
   console.log(`loading dotenv configuration with options: ${JSON.stringify(options)}`)
   const result = (config(options).parsed || {});
+  
+
+  if (result.error) {
+    const message = `failed to load environment file from '${options?.path}' ${result.error}`;
+    console.error(message);
+    throw new Error(message);
+  }
+
   console.log(`dotenv loaded successfully! ${JSON.stringify(result)}`)
 
   const source = ((options?.path) ? `dotenv (${options.path})` : 'dotenv');

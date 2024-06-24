@@ -1,0 +1,9 @@
+
+- expose a collection of values
+- logo in docs
+- write code sample on install with logo
+- allow for the initialization of multiple environments to support testing scenarios.  make this part of configuration for each environment (e.g. initialize).  force the specification of a default environment (e.g. setAsDefault)
+- allow for fetching variables and secrets by environment to support testing scenarios.  will mean multiple keypa instances.
+- remove ability to fetch all AWS secrets and force the specification of secrets in configuration
+- ability to unmask secrets
+- ability to skip output of values on initialization

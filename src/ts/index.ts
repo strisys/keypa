@@ -55,16 +55,39 @@ export class Keypa {
     return this._envCache.get(name);
   }
 
+  public getMany(...keys: Array<string>): Record<string, KeypaValue> {
+    return keys.reduce<Record<string, KeypaValue>>((acc, key) => {
+      acc[key] = this.get(key);
+      return acc;
+    }, {});
+  }
+
+  public tryGetMany(...keys: Array<string>): Record<string, KeypaValue> {
+    return keys.reduce<Record<string, KeypaValue>>((acc, key) => {
+      const value = this.tryGet(key);
+
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+
+      return acc;
+    }, {});
+  }
+
   public toJson(): Array<{}> {
     return this._envCache.toJson();
   }
 
   public static get current(): Keypa {
     if (!Keypa._instance) {
-      throw new Error('Keypa is not initialized.');
+      throw new Error('failed to get current Keypa instance.  initialize has not been invoked or completed successfully or it has been disposed.');
     }
 
     return Keypa._instance;
+  }
+
+  public static isInitialized(): boolean {
+    return (Keypa._instance !== null);
   }
 
   public static dispose(): void {
@@ -89,7 +112,7 @@ export class Keypa {
         }
 
         result[key].addDuplicate(value);
-        
+
       });
     }
 
