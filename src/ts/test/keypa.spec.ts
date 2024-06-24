@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import { Keypa, KeypaConfigBuilder, KeypaProviderConfig } from '../index.js';
 
@@ -7,6 +8,10 @@ const getEnvFilePath = () => {
   const filename = fileURLToPath(import.meta.url);
   const dirname = path.dirname(filename);
   return path.resolve(dirname, '.env-keypa');
+}
+
+const isLocal = () => {
+  return os.hostname().includes('WIN11-23H2');
 }
 
 describe('KepaConfigBuilder', () => {
@@ -82,6 +87,10 @@ describe('KepaConfigBuilder', () => {
       });
 
       it(`should be able to configure dotenv and azure key vault`, async () => {
+        if (!isLocal()) {
+          return;
+        }
+
         this.timeout(15000);
 
         // Assemble
@@ -130,6 +139,10 @@ describe('KepaConfigBuilder', () => {
       });
 
       it(`should be able to configure dotenv, azure key vault, and aws secret manager`, async () => {
+        if (!isLocal()) {
+          return;
+        }
+        
         this.timeout(15000);
 
         // Assemble
