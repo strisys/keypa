@@ -10,28 +10,24 @@ const builder = KeypaConfigBuilder.configure('development', 'production');
 
 // configure 3 providers for development environment
 builder.get('development').providers
-       .set('dotenv': {})
-       .set('azure-keyvault', { keyVaultName: 'kv-myapp-development' }})
-       .set('aws-secrets-manager', { profile: 'my-profile-name', secrets: `development/keypa/config` }})
+  .set('dotenv', {})
+  .set('azure-keyvault', { keyVaultName: 'kv-myapp-development' })
+  .set('aws-secrets-manager', { profile: 'my-profile-name', secrets: `development/keypa/config` })
 
 // configure 3 providers for production environment
 builder.get('production').providers
-       .set('dotenv': {})
-       .set('azure-keyvault', { keyVaultName: 'kv-myapp-production' }})
-       .set('aws-secrets-manager', { profile: 'my-profile-name', secrets: `production/keypa/config` }})
+  .set('dotenv', {})
+  .set('azure-keyvault', { keyVaultName: 'kv-myapp-production' })
+  .set('aws-secrets-manager', { profile: 'my-profile-name', secrets: `production/keypa/config` })
 
 // fetch variables and secrets for development only
-const kepa = builder.initialize('development');
+const kepa = await builder.initialize('development');
 
 // log info and values
-const debugVal = kepa.get('debug').value;  
+const debugVal = kepa.get('debug').value;
 console.log(debugVal);             // *,-express:*,-connect:*
 
 const dbConfig = kepa.get('aws-rds-sql');
-
-console.log(dbConfig.name);        // db-server
-console.log(dbConfig.value);       // my-database.000000000000.us-east-1.rds.amazonaws.com
-console.log(dbConfig.source);      // aws-secret-manager
 
 ```
 
