@@ -2,10 +2,10 @@ import { KeypaConfigBuilder, KeypaProviderConfig, ProviderType } from './config.
 import { getProviderFetch } from './providers/index.js';
 import { KeypaValueCache, KeypaValue } from './value.js';
 
-
 export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
 
+let isInitializing = false;
 
 export class Keypa {
   private static _instance: (Keypa | null) = null;
@@ -128,31 +128,36 @@ export class Keypa {
       });
     }
 
-    let isInitializing = false;
-
     const initializeEnv = async (env: string) => {
       if (isInitializing) {
+        console.info(`skipping initialization.  is currently running for the current environment: ${env}`);
         return
       }
 
-      isInitializing = false
+      isInitializing = true;
 
       console.info(`Initializing Keypa for environment: ${env}`);
-      const envConfig = builder.get(env);
 
-      // Initialize the process.env provider
-      let fn = getProviderFetch('process.env');
-      let values = (await fn());
-      hydrate(values);
+      try {
+        const envConfig = builder.get(env);
 
-      // Initialize the other providers
-      for (const providerType of envConfig.providerTypes) {
-        const config = envConfig.providers.get(providerType);
-        hydrate(await getProviderFetch(providerType)(config));
+        // Initialize the process.env provider
+        let fn = getProviderFetch('process.env');
+        let values = (await fn());
+        hydrate(values);
+
+        // Initialize the other providers
+        for (const providerType of envConfig.providerTypes) {
+          const config = envConfig.providers.get(providerType);
+          hydrate(await getProviderFetch(providerType)(config));
+        }
+
+        instance._envCache = new KeypaValueCache(env, result);
+        Keypa._instance = instance;
       }
-
-      instance._envCache = new KeypaValueCache(env, result);
-      Keypa._instance = instance;
+      finally {
+        isInitializing = false;
+      }
     };
 
     await initializeEnv(environment);
