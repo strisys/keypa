@@ -10,7 +10,6 @@
   "type": "module",
   "private": false,
   "scripts": {
-    "postinstall": "npm-run-all test start",
     "clean-js": "rimraf \"./src/js\"",
     "copy-env": "copyfiles -u 2 \"./src/ts/**/.env*\" \"./src/js\"",
     "tsc": "tsc",
