@@ -1,8 +1,8 @@
 
+import { SecretsManagerClient, ListSecretsCommand, GetSecretValueCommand, SecretListEntry, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
+import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { ProviderConfigType } from '../config.js';
 import { KeypaValue } from '../index.js';
-import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import { SecretsManagerClient, ListSecretsCommand, GetSecretValueCommand, SecretListEntry, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 
 type AwsProviderConfigType = ProviderConfigType<'aws-secrets-manager'>;
 
@@ -13,7 +13,6 @@ class SecretStore {
   constructor(options: AwsProviderConfigType) {
     this._options = options;
   }
-
 
   private async tryGetClient(): Promise<SecretsManagerClient> {
     if (this._client) {
