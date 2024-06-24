@@ -1,6 +1,6 @@
 {
   "name": "keypa",
-  "version": "0.0.0-alpha.7",
+  "version": "0.0.0-alpha.8",
   "description": "Simplify the retrieval and debugging of environment variables and secret sourced from various providers.",
   "main": "./src/js/index.js",
   "exports": {
@@ -10,6 +10,7 @@
   "type": "module",
   "private": false,
   "scripts": {
+    "postinstall": "npm-run-all transpile",
     "clean-js": "rimraf \"./src/js\"",
     "copy-env": "copyfiles -u 2 \"./src/ts/**/.env*\" \"./src/js\"",
     "tsc": "tsc",
