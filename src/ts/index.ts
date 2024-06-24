@@ -129,12 +129,6 @@ export class Keypa {
     }
 
     const initializeEnv = async (env: string) => {
-      if (isInitializing) {
-        return
-      }
-
-      isInitializing = true;
-
       console.info(`Initializing Keypa for environment: ${env}`);
 
       try {
@@ -149,6 +143,10 @@ export class Keypa {
         for (const providerType of envConfig.providerTypes) {
           const config = envConfig.providers.get(providerType);
           hydrate(await getProviderFetch(providerType)(config));
+        }
+
+        if (Keypa._instance) {
+          return;
         }
 
         instance._envCache = new KeypaValueCache(env, result);
