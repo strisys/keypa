@@ -130,7 +130,6 @@ export class Keypa {
 
     const initializeEnv = async (env: string) => {
       if (isInitializing) {
-        console.info(`skipping initialization.  is currently running for the current environment: ${env}`);
         return
       }
 
