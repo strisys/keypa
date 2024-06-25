@@ -50,7 +50,6 @@ const cloudExecutionContext = (): CloudProviderExecutionContext => {
   return 'unknown'
 }
 
-
 export class ListenerResult {
   private readonly _value: KeypaValue;
   private readonly _accumulator: Record<string, KeypaValue>;
@@ -74,7 +73,7 @@ export class ListenerResult {
     return this._accumulator[name];
   }
 
-  public cloudExecutionContext(): CloudProviderExecutionContext {
+  public get cloudExecutionContext(): CloudProviderExecutionContext {
     return cloudExecutionContext()
   }
 
@@ -147,7 +146,7 @@ export class Keypa {
     return (Keypa.current._envCache?.environment || 'unknown');
   }
 
-  public cloudExecutionContext(): CloudProviderExecutionContext {
+  public get cloudExecutionContext(): CloudProviderExecutionContext {
     return cloudExecutionContext()
   }
 
