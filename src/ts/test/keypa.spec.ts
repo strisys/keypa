@@ -73,8 +73,17 @@ describe('KepaConfigBuilder', () => {
         builder.get(environments[1]).providers
           .set('dotenv', dotEnvConfig);
 
+        const expectedExtract = 'TEST_VALUE';
+        let extracted = false;
+
         try {
-          const keypa = await builder.initialize(currentEnvironment)
+          const keypa = await builder.initialize(currentEnvironment, (value) => {
+            if (value.name === expectedExtract) {
+              extracted = true;
+            }
+          })
+
+          expect(extracted).to.be.true;
 
           expect(keypa).to.be.instanceOf(Keypa);
           expect(keypa === Keypa.current).to.be.true;

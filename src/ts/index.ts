@@ -106,7 +106,7 @@ export class Keypa {
     Keypa._instance = null;
   }
 
-  private static async _initialize(builder: KeypaConfigBuilder, environment: string): Promise<Keypa> {
+  private static async _initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: (value: KeypaValue) => void): Promise<Keypa> {
     if (Keypa._instance) {
       return Keypa._instance;
     }
@@ -122,6 +122,11 @@ export class Keypa {
 
         if (!result[key]) {
           result[key] = value;
+
+          if (valueListener) {
+            valueListener(value);
+          }
+
           return;
         }
 
@@ -152,8 +157,8 @@ export class Keypa {
     return (Keypa._instance = instance);
   }
 
-  public static async initialize(builder: KeypaConfigBuilder, environment: string): Promise<Keypa> {
-    const promise = (await (Keypa._initialiatzationPromise || (Keypa._initialiatzationPromise = Keypa._initialize(builder, environment))));
+  public static async initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: (value: KeypaValue) => void): Promise<Keypa> {
+    const promise = (await (Keypa._initialiatzationPromise || (Keypa._initialiatzationPromise = Keypa._initialize(builder, environment, valueListener))));
     Keypa._initialiatzationPromise = null;
     return promise;
   }
