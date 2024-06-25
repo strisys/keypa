@@ -5,13 +5,12 @@ import { KeypaValueCache, KeypaValue } from './value.js';
 export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
 
-let isInitializing = false;
-
 export class Keypa {
+  private static _initialiatzationPromise: (Promise<void> | null) = null;
   private static _instance: (Keypa | null) = null;
   private readonly _builder: KeypaConfigBuilder;
   private _envCache: KeypaValueCache = new KeypaValueCache('unknown', {});
-
+  
   private constructor(builder: KeypaConfigBuilder) {
     this._builder = builder;
   }
@@ -109,7 +108,7 @@ export class Keypa {
 
   public static async initialize(builder: KeypaConfigBuilder, environment: string): Promise<Keypa> {
     if (Keypa._instance) {
-      throw new Error('Keypa is already initialized.');
+      Promise.resolve(Keypa._instance);
     }
 
     const instance = new Keypa(builder);
@@ -153,11 +152,16 @@ export class Keypa {
         Keypa._instance = instance;
       }
       finally {
-        isInitializing = false;
+        Keypa._initialiatzationPromise = null;
       }
     };
 
-    await initializeEnv(environment);
+    if (Keypa._initialiatzationPromise) {
+      await Keypa._initialiatzationPromise;
+      return instance;
+    }
+
+    await (Keypa._initialiatzationPromise = initializeEnv(environment));
     instance.log('table');
 
     return instance;
