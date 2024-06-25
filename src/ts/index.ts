@@ -6,6 +6,34 @@ export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
 export type ListenerFn = (result: ListenerResult) => void;
 
+export type CloudProviderExecutionContext = ('aws' | 'azure' | 'gcp' | 'unknown');
+
+const exists = (name: string): boolean => {
+  return Boolean(process.env[name]);
+}
+
+const anyOneOf = (...names: Array<string>): boolean => {
+  for (const name of names) {
+    if (exists(name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+const isInAzure = (): boolean => {
+  return (anyOneOf('WEBSITE_SITE_NAME', 'WEBSITE_SITE_NAME'));
+}
+
+const isInAws = (): boolean => {
+  return (anyOneOf('AWS_EXECUTION_ENV', 'ECS_CONTAINER_METADATA_URI', 'EC2_INSTANCE_ID ', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_REGION', 'ELASTIC_BEANSTALK_ENVIRONMENT_NAME', 'ELASTIC_BEANSTALK_ENVIRONMENT_ID'));
+}
+
+const isInGcp = (): boolean => {
+  return (anyOneOf('GCP_PROJECT', 'FUNCTION_NAME', 'FUNCTION_REGION', 'GAE_APPLICATION', 'GAE_ENV ', 'GAE_SERVICE', 'GAE_VERSION', 'GAE_INSTANCE', 'KUBERNETES_SERVICE_HOST', 'KUBERNETES_SERVICE_PORT', 'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT '));
+}
+
 export class ListenerResult {
   private readonly _value: KeypaValue;
   private readonly _accumulator: Record<string, KeypaValue>;
@@ -96,6 +124,22 @@ export class Keypa {
 
   public get environment(): string {
     return (Keypa.current._envCache?.environment || 'unknown');
+  }
+
+  public cloudExecutionContext(): CloudProviderExecutionContext {
+    if (isInAws()) {
+      return 'aws';
+    }
+
+    if (isInAzure()) {
+      return 'azure';
+    }
+
+    if (isInGcp()) {
+      return 'gcp';
+    }
+
+    return 'unknown'
   }
 
   public tryGet(name: string): KeypaValue {
