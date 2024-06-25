@@ -3,7 +3,6 @@ import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { Keypa, KeypaConfigBuilder, KeypaProviderConfig } from '../index.js';
-import exp from 'constants';
 
 const getEnvFilePath = () => {
   const filename = fileURLToPath(import.meta.url);

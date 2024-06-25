@@ -31,8 +31,25 @@ const isInAws = (): boolean => {
 }
 
 const isInGcp = (): boolean => {
-  return (anyOneOf('GCP_PROJECT', 'FUNCTION_NAME', 'FUNCTION_REGION', 'GAE_APPLICATION', 'GAE_ENV ', 'GAE_SERVICE', 'GAE_VERSION', 'GAE_INSTANCE', 'KUBERNETES_SERVICE_HOST', 'KUBERNETES_SERVICE_PORT', 'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT '));
+  return (anyOneOf('GCP_PROJECT', 'FUNCTION_NAME', 'FUNCTION_REGION', 'GAE_APPLICATION', 'GAE_ENV ', 'GAE_SERVICE', 'GAE_VERSION', 'GAE_INSTANCE', 'KUBERNETES_SERVICE_HOST', 'KUBERNETES_SERVICE_PORT', 'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT'));
 }
+
+const cloudExecutionContext = (): CloudProviderExecutionContext => {
+  if (isInAws()) {
+    return 'aws';
+  }
+
+  if (isInAzure()) {
+    return 'azure';
+  }
+
+  if (isInGcp()) {
+    return 'gcp';
+  }
+
+  return 'unknown'
+}
+
 
 export class ListenerResult {
   private readonly _value: KeypaValue;
@@ -55,6 +72,10 @@ export class ListenerResult {
 
   public tryGet(name: string): KeypaValue {
     return this._accumulator[name];
+  }
+
+  public cloudExecutionContext(): CloudProviderExecutionContext {
+    return cloudExecutionContext()
   }
 
   public get(name: string): KeypaValue {
@@ -127,19 +148,7 @@ export class Keypa {
   }
 
   public cloudExecutionContext(): CloudProviderExecutionContext {
-    if (isInAws()) {
-      return 'aws';
-    }
-
-    if (isInAzure()) {
-      return 'azure';
-    }
-
-    if (isInGcp()) {
-      return 'gcp';
-    }
-
-    return 'unknown'
+    return cloudExecutionContext()
   }
 
   public tryGet(name: string): KeypaValue {
