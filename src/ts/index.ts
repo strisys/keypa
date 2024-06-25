@@ -25,13 +25,27 @@ export class ListenerResult {
     return this._value;
   }
 
-  public get accumulator(): Record<string, KeypaValue> {
-    return { ...this._accumulator};
+  public tryGet(name: string): KeypaValue {
+    return this._accumulator[name];
+  }
+
+  public get(name: string): KeypaValue {
+    const value = this.tryGet(name);
+
+    if (!value) {
+      throw new Error(`Failed to get value for name: ${name}`);
+    }
+
+    return value;
+  }
+
+  public has(name: string): boolean {
+    return Boolean(this._accumulator[name]);
   }
 
   public hasAll(...names: Array<string>): boolean {
-    for (const name of names) {
-      if (!this._accumulator[name]) {
+    for (const name of (names || [])) {
+      if (!this.has(name)) {
         return false;
       }
     }
@@ -40,13 +54,7 @@ export class ListenerResult {
   }
 
   public hasAny(...names: Array<string>): boolean {
-    for (const name of names) {
-      if (this._accumulator[name]) {
-        return true;
-      }
-    }
-
-    return false;
+    return (names || []).some(this.has, this);
   }
 }
 

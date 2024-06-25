@@ -84,7 +84,9 @@ describe('KepaConfigBuilder', () => {
             }
 
             expect(value.environment).to.be.equal(currentEnvironment);
-            expect(value.accumulator).to.be.an('object');
+            expect(value.has(value.current.name)).to.be.true;
+            expect(value.hasAny(value.current.name)).to.be.true;
+            expect(value.hasAll(value.current.name)).to.be.true;
           })
 
           expect(extracted).to.be.true;
