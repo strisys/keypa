@@ -4,7 +4,51 @@ import { KeypaValueCache, KeypaValue } from './value.js';
 
 export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
-export type ListenerFn = (value: KeypaValue, accumulator: Record<string, KeypaValue>) => void;
+export type ListenerFn = (result: ListenerResult) => void;
+
+export class ListenerResult {
+  private readonly _value: KeypaValue;
+  private readonly _accumulator: Record<string, KeypaValue>;
+  private readonly _environment: string;
+
+  public constructor(envrionment: string, value: KeypaValue, accumulator: Record<string, KeypaValue>) {
+    this._environment = envrionment;
+    this._value = value;
+    this._accumulator = accumulator;
+  }
+
+  public get environment(): string {
+    return this._environment;
+  }
+
+  public get current(): KeypaValue {
+    return this._value;
+  }
+
+  public get accumulator(): Record<string, KeypaValue> {
+    return { ...this._accumulator};
+  }
+
+  public hasAll(...names: Array<string>): boolean {
+    for (const name of names) {
+      if (!this._accumulator[name]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public hasAny(...names: Array<string>): boolean {
+    for (const name of names) {
+      if (this._accumulator[name]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+}
 
 export class Keypa {
   private static _initialiatzationPromise: (Promise<Keypa> | null) = null;
@@ -125,7 +169,7 @@ export class Keypa {
           result[key] = value;
 
           if (valueListener) {
-            valueListener(value, result);
+            valueListener(new ListenerResult(environment, value, result));
           }
 
           return;
@@ -159,7 +203,7 @@ export class Keypa {
   }
 
   public static async initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: ListenerFn): Promise<Keypa> {
-    const promise = (await (Keypa._initialiatzationPromise || (Keypa._initialiatzationPromise = Keypa._initialize(builder, environment, valueListener))));
+    const promise = (Keypa._initialiatzationPromise || (Keypa._initialiatzationPromise = Keypa._initialize(builder, environment, valueListener)));
     Keypa._initialiatzationPromise = null;
     return promise;
   }

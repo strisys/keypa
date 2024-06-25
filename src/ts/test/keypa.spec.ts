@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { Keypa, KeypaConfigBuilder, KeypaProviderConfig } from '../index.js';
+import exp from 'constants';
 
 const getEnvFilePath = () => {
   const filename = fileURLToPath(import.meta.url);
@@ -78,9 +79,12 @@ describe('KepaConfigBuilder', () => {
 
         try {
           const keypa = await builder.initialize(currentEnvironment, (value) => {
-            if (value.name === expectedExtract) {
+            if (value.current.name === expectedExtract) {
               extracted = true;
             }
+
+            expect(value.environment).to.be.equal(currentEnvironment);
+            expect(value.accumulator).to.be.an('object');
           })
 
           expect(extracted).to.be.true;
