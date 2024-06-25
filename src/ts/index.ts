@@ -6,11 +6,11 @@ export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
 
 export class Keypa {
-  private static _initialiatzationPromise: (Promise<void> | null) = null;
+  private static _initialiatzationPromise: (Promise<Keypa> | null) = null;
   private static _instance: (Keypa | null) = null;
   private readonly _builder: KeypaConfigBuilder;
   private _envCache: KeypaValueCache = new KeypaValueCache('unknown', {});
-  
+
   private constructor(builder: KeypaConfigBuilder) {
     this._builder = builder;
   }
@@ -106,13 +106,15 @@ export class Keypa {
     Keypa._instance = null;
   }
 
-  public static async initialize(builder: KeypaConfigBuilder, environment: string): Promise<Keypa> {
+  private static async _initialize(builder: KeypaConfigBuilder, environment: string): Promise<Keypa> {
     if (Keypa._instance) {
-      Promise.resolve(Keypa._instance);
+      return Keypa._instance;
     }
 
     const instance = new Keypa(builder);
     const result: Record<string, KeypaValue> = {};
+
+    console.info(`Initializing Keypa for environment: ${environment}`);
 
     const hydrate = (values: Record<string, KeypaValue>) => {
       Object.keys(values).forEach((key) => {
@@ -127,43 +129,32 @@ export class Keypa {
       });
     }
 
-    const initializeEnv = async (env: string) => {
-      console.info(`Initializing Keypa for environment: ${env}`);
+    const envConfig = builder.get(environment);
 
-      try {
-        const envConfig = builder.get(env);
+    // Initialize the process.env provider
+    let fn = getProviderFetch('process.env');
+    let values = (await fn());
+    hydrate(values);
 
-        // Initialize the process.env provider
-        let fn = getProviderFetch('process.env');
-        let values = (await fn());
-        hydrate(values);
-
-        // Initialize the other providers
-        for (const providerType of envConfig.providerTypes) {
-          const config = envConfig.providers.get(providerType);
-          hydrate(await getProviderFetch(providerType)(config));
-        }
-
-        if (Keypa._instance) {
-          return;
-        }
-
-        instance._envCache = new KeypaValueCache(env, result);
-        Keypa._instance = instance;
-      }
-      finally {
-        Keypa._initialiatzationPromise = null;
-      }
-    };
-
-    if (Keypa._initialiatzationPromise) {
-      await Keypa._initialiatzationPromise;
-      return instance;
+    // Initialize the other providers
+    for (const providerType of envConfig.providerTypes) {
+      const config = envConfig.providers.get(providerType);
+      hydrate(await getProviderFetch(providerType)(config));
     }
 
-    await (Keypa._initialiatzationPromise = initializeEnv(environment));
+    if (Keypa._instance) {
+      return Keypa._instance;
+    }
+
+    instance._envCache = new KeypaValueCache(environment, result);
     instance.log('table');
 
-    return instance;
+    return (Keypa._instance = instance);
+  }
+
+  public static async initialize(builder: KeypaConfigBuilder, environment: string): Promise<Keypa> {
+    const promise = (await (Keypa._initialiatzationPromise || (Keypa._initialiatzationPromise = Keypa._initialize(builder, environment))));
+    Keypa._initialiatzationPromise = null;
+    return promise;
   }
 }
