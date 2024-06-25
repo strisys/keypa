@@ -11,6 +11,7 @@
   "private": false,
   "scripts": {
     "postinstall": "npm-run-all transpile",
+    "list-packages": "npm list --depth 1",
     "clean-js": "rimraf \"./src/js\"",
     "copy-env": "copyfiles -u 2 \"./src/ts/**/.env*\" \"./src/js\"",
     "tsc": "tsc",
