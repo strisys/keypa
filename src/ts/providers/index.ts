@@ -11,6 +11,26 @@ const initializeMap: Record<ProviderType, any> = {
   ['aws-secrets-manager']: awsSecretManagerFetch
 };
 
-export const getProviderFetch = (provider: ProviderType) => {
-  return initializeMap[provider];
+export class ProviderLoader {
+  private _providerType: ProviderType;
+
+  public constructor(provider: ProviderType) {
+    this._providerType = provider;
+  }
+
+  public getFetchFn() {
+    return initializeMap[this._providerType];
+  }
+
+  public get isAsync(): boolean {
+    return (this.getFetchFn().constructor.name === 'AsyncFunction');
+  }
+
+  public get isSync(): boolean {
+    return (!this.isAsync);
+  }
+}
+
+export const getLoader = (provider: ProviderType): ProviderLoader => {
+  return (new ProviderLoader(provider));
 }

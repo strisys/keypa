@@ -1,5 +1,5 @@
 import { KeypaConfigBuilder, KeypaProviderConfig, ProviderType } from './config.js';
-import { getProviderFetch } from './providers/index.js';
+import { getLoader, ProviderLoader } from './providers/index.js';
 import { KeypaValueCache, KeypaValue } from './value.js';
 
 export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
@@ -59,7 +59,7 @@ export class ListenerResult {
 }
 
 export class Keypa {
-  private static _initialiatzationPromise: (Promise<Keypa> | null) = null;
+  private static _initPromise: (Promise<Keypa> | null) = null;
   private static _instance: (Keypa | null) = null;
   private readonly _builder: KeypaConfigBuilder;
   private _envCache: KeypaValueCache = new KeypaValueCache('unknown', {});
@@ -159,60 +159,96 @@ export class Keypa {
     Keypa._instance = null;
   }
 
-  private static async _initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: ListenerFn): Promise<Keypa> {
-    if (Keypa._instance) {
-      return Keypa._instance;
-    }
+  private static hydrate(values: Record<string, KeypaValue>, results: Record<string, KeypaValue>, environment: string, valueListener?: ListenerFn): void {
+    Object.keys(values).forEach((key) => {
+      const value = values[key];
 
-    const instance = new Keypa(builder);
-    const result: Record<string, KeypaValue> = {};
+      if (!results[key]) {
+        results[key] = value;
 
-    console.info(`Initializing Keypa for environment: ${environment}`);
-
-    const hydrate = (values: Record<string, KeypaValue>) => {
-      Object.keys(values).forEach((key) => {
-        const value = values[key];
-
-        if (!result[key]) {
-          result[key] = value;
-
-          if (valueListener) {
-            valueListener(new ListenerResult(environment, value, result));
-          }
-
-          return;
+        if (valueListener) {
+          valueListener(new ListenerResult(environment, value, results));
         }
 
-        result[key].addDuplicate(value);
-      });
-    }
+        return;
+      }
+
+      results[key].addDuplicate(value);
+    });
+
+  }
+
+  private static initializeSync(builder: KeypaConfigBuilder, environment: string, valueListener?: ListenerFn): [Record<string, KeypaValue>, Array<ProviderType>] {
+    const result: Record<string, KeypaValue> = {};
+    console.info(`Initializing Keypa for environment: ${environment}`);
 
     const envConfig = builder.get(environment);
+    const processed: Array<ProviderType> = [];
 
-    // Initialize the process.env provider
-    let fn = getProviderFetch('process.env');
-    let values = (await fn());
-    hydrate(values);
+    const processLoader = (providerType: ProviderType): ProviderLoader => {
+      const loader = getLoader(providerType);
+      processed.push(providerType);
+
+      const config = envConfig.providers.get(providerType);
+      const fn = loader.getFetchFn();
+      const values = fn(config);
+      Keypa.hydrate(values, result, environment, valueListener);
+
+      return loader;
+    }
+
+    processLoader('process.env');
 
     // Initialize the other providers
     for (const providerType of envConfig.providerTypes) {
+      const loader = getLoader(providerType);
+
+      // break on the first that is not async
+      if (loader.isAsync) {
+        break
+      }
+
+      processLoader(providerType);
+    }
+
+    return [result, processed];
+  }
+
+  private static async initializeAsync(builder: KeypaConfigBuilder, environment: string, accumulator: Record<string, KeypaValue>, providerTypes: Array<ProviderType>): Promise<Keypa> {
+    const instance = new Keypa(builder);
+    const envConfig = builder.get(environment);
+
+    // Initialize the other providers
+    for (const providerType of envConfig.providerTypes.filter((pt) => !providerTypes.includes(pt))) {
       const config = envConfig.providers.get(providerType);
-      hydrate(await getProviderFetch(providerType)(config));
+      const fn = getLoader(providerType).getFetchFn();
+      const values = (await fn(config));
+      Keypa.hydrate(values, accumulator, environment);
     }
 
     if (Keypa._instance) {
       return Keypa._instance;
     }
 
-    instance._envCache = new KeypaValueCache(environment, result);
+    instance._envCache = new KeypaValueCache(environment, accumulator);
     instance.log('table');
 
     return (Keypa._instance = instance);
   }
 
   public static async initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: ListenerFn): Promise<Keypa> {
-    const promise = (Keypa._initialiatzationPromise || (Keypa._initialiatzationPromise = Keypa._initialize(builder, environment, valueListener)));
-    Keypa._initialiatzationPromise = null;
+    if (Keypa._instance) {
+      return Keypa._instance;
+    }
+
+    if (Keypa._initPromise) {
+      return Keypa._initPromise;
+    }
+
+    const [accumulator, processed] = Keypa.initializeSync(builder, environment, valueListener);
+    const promise = (await (Keypa._initPromise = Keypa.initializeAsync(builder, environment, accumulator, processed)));
+    Keypa._initPromise = null;
+
     return promise;
   }
 }

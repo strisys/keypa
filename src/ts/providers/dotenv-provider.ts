@@ -4,7 +4,7 @@ import { ProviderConfigType } from '../config.js';
 
 type DotEnvProviderConfigType = ProviderConfigType<'dotenv'>;
 
-export const fetch = async (options: DotEnvProviderConfigType): Promise<Record<string, KeypaValue>> => {
+export const fetch = (options: DotEnvProviderConfigType): Record<string, KeypaValue> => {
   console.log(`loading dotenv configuration with options: ${JSON.stringify(options)}`)
   const result = (config(options).parsed || {});
 
