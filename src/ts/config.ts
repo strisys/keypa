@@ -1,6 +1,6 @@
 import { TokenCredential } from '@azure/identity';
 import { DotenvConfigOptions } from 'dotenv';
-import { Keypa, KeypaValue } from './index.js';
+import { Keypa, KeypaValue, ListenerFn } from './index.js';
 
 export type ProviderType = ('process.env' | 'dotenv' | 'azure-keyvault' | 'aws-secrets-manager');
 
@@ -101,7 +101,7 @@ export class KeypaConfigBuilder {
     return ((useStandard) ? KeypaConfigBuilder.standard() : new KeypaConfigBuilder(environments));
   }
 
-  public async initialize(environment: string, valueListener?: (value: KeypaValue) => void): Promise<Keypa> {
+  public async initialize(environment: string, valueListener?: ListenerFn): Promise<Keypa> {
     return Keypa.initialize(this, environment, valueListener);
   }
 

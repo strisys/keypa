@@ -4,6 +4,7 @@ import { KeypaValueCache, KeypaValue } from './value.js';
 
 export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
+export type ListenerFn = (value: KeypaValue, accumulator: Record<string, KeypaValue>) => void;
 
 export class Keypa {
   private static _initialiatzationPromise: (Promise<Keypa> | null) = null;
@@ -106,7 +107,7 @@ export class Keypa {
     Keypa._instance = null;
   }
 
-  private static async _initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: (value: KeypaValue) => void): Promise<Keypa> {
+  private static async _initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: ListenerFn): Promise<Keypa> {
     if (Keypa._instance) {
       return Keypa._instance;
     }
@@ -124,7 +125,7 @@ export class Keypa {
           result[key] = value;
 
           if (valueListener) {
-            valueListener(value);
+            valueListener(value, result);
           }
 
           return;
@@ -157,7 +158,7 @@ export class Keypa {
     return (Keypa._instance = instance);
   }
 
-  public static async initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: (value: KeypaValue) => void): Promise<Keypa> {
+  public static async initialize(builder: KeypaConfigBuilder, environment: string, valueListener?: ListenerFn): Promise<Keypa> {
     const promise = (await (Keypa._initialiatzationPromise || (Keypa._initialiatzationPromise = Keypa._initialize(builder, environment, valueListener))));
     Keypa._initialiatzationPromise = null;
     return promise;
