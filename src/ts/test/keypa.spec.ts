@@ -68,7 +68,7 @@ describe('KepaConfigBuilder', () => {
 
         // Arrange
         builder.get(environments[0]).providers
-          .set('dotenv', dotEnvConfig);
+          .set('dotenv', dotEnvConfig, () => true);
 
         builder.get(environments[1]).providers
           .set('dotenv', dotEnvConfig);

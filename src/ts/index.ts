@@ -6,80 +6,82 @@ export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
 export type ListenerFn = (result: ListenerResult) => void;
 
-export type CloudProviderExecutionContext = ('aws' | 'azure' | 'gcp' | 'azure-pipelines' | 'github-actions' | 'aws-codebuild' | 'gcp-build' | 'unknown');
+export type ExecutionContextType = ('aws' | 'azure' | 'gcp' | 'azure-pipelines' | 'github-actions' | 'aws-codebuild' | 'gcp-build' | 'unknown');
 
-const exists = (name: string): boolean => {
-  return Boolean(process.env[name]);
-}
+export class ExecutionContext {
+  private static exists = (name: string): boolean => {
+    return Boolean(process.env[name]);
+  }
 
-const anyOneOf = (...names: Array<string>): boolean => {
-  for (const name of names) {
-    if (exists(name)) {
-      return true;
+  private static anyOneOf = (...names: Array<string>): boolean => {
+    for (const name of names) {
+      if (ExecutionContext.exists(name)) {
+        return true;
+      }
     }
+
+    return false;
   }
 
-  return false;
-}
-
-const isInAzure = (): boolean => {
-  return (anyOneOf('WEBSITE_SITE_NAME', 'WEBSITE_SITE_NAME'));
-}
-
-const isInAws = (): boolean => {
-  return (anyOneOf('AWS_EXECUTION_ENV', 'ECS_CONTAINER_METADATA_URI', 'EC2_INSTANCE_ID ', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_REGION', 'ELASTIC_BEANSTALK_ENVIRONMENT_NAME', 'ELASTIC_BEANSTALK_ENVIRONMENT_ID'));
-}
-
-const isInGcp = (): boolean => {
-  return (anyOneOf('GCP_PROJECT', 'FUNCTION_NAME', 'FUNCTION_REGION', 'GAE_APPLICATION', 'GAE_ENV ', 'GAE_SERVICE', 'GAE_VERSION', 'GAE_INSTANCE', 'KUBERNETES_SERVICE_HOST', 'KUBERNETES_SERVICE_PORT', 'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT'));
-}
-
-const isGitHubActions = (): boolean => {
-  return (anyOneOf('GITHUB_ACTIONS'));
-}
-
-const isAzurePipelines = (): boolean => {
-  return (anyOneOf('TF_BUILD'));
-}
-
-const isAwsCodeBuild = (): boolean => {
-  return (anyOneOf('CODEBUILD_BUILD_ID'));
-}
-
-const isGcpBuild = (): boolean => {
-  return (anyOneOf('BUILDER_OUTPUT', 'BUILD_ID', 'BUILD_TRIGGER_ID'));
-}
-
-const cloudExecutionContext = (): CloudProviderExecutionContext => {
-  if (isInAws()) {
-    return 'aws';
+  private static isInAzure = (): boolean => {
+    return (ExecutionContext.anyOneOf('WEBSITE_SITE_NAME', 'WEBSITE_SITE_NAME'));
   }
 
-  if (isInAzure()) {
-    return 'azure';
+  private static isInAws = (): boolean => {
+    return (ExecutionContext.anyOneOf('AWS_EXECUTION_ENV', 'ECS_CONTAINER_METADATA_URI', 'EC2_INSTANCE_ID ', 'AWS_LAMBDA_FUNCTION_NAME', 'AWS_REGION', 'ELASTIC_BEANSTALK_ENVIRONMENT_NAME', 'ELASTIC_BEANSTALK_ENVIRONMENT_ID'));
   }
 
-  if (isInGcp()) {
-    return 'gcp';
+  private static isInGcp = (): boolean => {
+    return (ExecutionContext.anyOneOf('GCP_PROJECT', 'FUNCTION_NAME', 'FUNCTION_REGION', 'GAE_APPLICATION', 'GAE_ENV ', 'GAE_SERVICE', 'GAE_VERSION', 'GAE_INSTANCE', 'KUBERNETES_SERVICE_HOST', 'KUBERNETES_SERVICE_PORT', 'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT'));
   }
 
-  if (isGitHubActions()) {
-    return 'github-actions';
+  private static isGitHubActions = (): boolean => {
+    return (ExecutionContext.anyOneOf('GITHUB_ACTIONS'));
   }
 
-  if (isAzurePipelines()) {
-    return 'azure-pipelines';
+  private static isAzurePipelines = (): boolean => {
+    return (ExecutionContext.anyOneOf('TF_BUILD'));
   }
 
-  if (isAwsCodeBuild()) {
-    return 'aws-codebuild';
+  private static isAwsCodeBuild = (): boolean => {
+    return (ExecutionContext.anyOneOf('CODEBUILD_BUILD_ID'));
   }
 
-  if (isGcpBuild()) {
-    return 'gcp-build';
+  private static isGcpBuild = (): boolean => {
+    return (ExecutionContext.anyOneOf('BUILDER_OUTPUT', 'BUILD_ID', 'BUILD_TRIGGER_ID'));
   }
 
-  return 'unknown'
+  public static get value(): ExecutionContextType {
+    if (ExecutionContext.isInAws()) {
+      return 'aws';
+    }
+
+    if (ExecutionContext.isInAzure()) {
+      return 'azure';
+    }
+
+    if (ExecutionContext.isInGcp()) {
+      return 'gcp';
+    }
+
+    if (ExecutionContext.isGitHubActions()) {
+      return 'github-actions';
+    }
+
+    if (ExecutionContext.isAzurePipelines()) {
+      return 'azure-pipelines';
+    }
+
+    if (ExecutionContext.isAwsCodeBuild()) {
+      return 'aws-codebuild';
+    }
+
+    if (ExecutionContext.isGcpBuild()) {
+      return 'gcp-build';
+    }
+
+    return 'unknown'
+  }
 }
 
 export class ListenerResult {
@@ -105,8 +107,8 @@ export class ListenerResult {
     return this._accumulator[name];
   }
 
-  public get cloudExecutionContext(): CloudProviderExecutionContext {
-    return cloudExecutionContext()
+  public get cloudExecutionContext(): ExecutionContextType {
+    return ExecutionContext.value
   }
 
   public get(name: string): KeypaValue {
@@ -178,8 +180,8 @@ export class Keypa {
     return (Keypa.current._envCache?.environment || 'unknown');
   }
 
-  public static get cloudExecutionContext(): CloudProviderExecutionContext {
-    return cloudExecutionContext()
+  public static get cloudExecutionContext(): ExecutionContextType {
+    return ExecutionContext.value;
   }
 
   public tryGet(name: string): KeypaValue {

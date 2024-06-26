@@ -1,6 +1,6 @@
 import { TokenCredential } from '@azure/identity';
 import { DotenvConfigOptions } from 'dotenv';
-import { Keypa, KeypaValue, ListenerFn } from './index.js';
+import { Keypa, ListenerFn } from './index.js';
 
 export type ProviderType = ('process.env' | 'dotenv' | 'azure-keyvault' | 'aws-secrets-manager');
 
@@ -9,30 +9,53 @@ export type ProviderConfigType<P extends ProviderType> =
   P extends 'dotenv' ? (DotenvConfigOptions | undefined) :
   P extends 'azure-keyvault' ? { keyVaultName: string, tokenCredentials?: (TokenCredential | Array<TokenCredential>) } :
   P extends 'aws-secrets-manager' ? { profile: string, secrets: (string | Array<string>) } :
-never;
+  P extends 'null' ? {} :
+  never;
 
+export class KeypaProviderTypeItem {
+  private readonly _provider: ProviderType;
+  private readonly _isInitializable: (((config: KeypaProviderTypeItem) => boolean) | null) = null;
+  private readonly _config: any;
 
-class KeypaProviderConfigCollection {
-  private readonly _inner: Map<ProviderType, any> = new Map<ProviderType, any>();
-  private readonly _providerTypes: Array<ProviderType> = [];
+  public constructor(provider: ProviderType, config: any, isInitializable?: (((item: KeypaProviderTypeItem) => boolean) | null)) {
+    this._provider = provider;
+    this._config = config;
+    this._isInitializable = (isInitializable || null);
+  }
+
+  public get isInitializable(): boolean {
+    return ((typeof this._isInitializable === 'function') ? this._isInitializable(this) : true);
+  }
+
+  public get provider(): ProviderType {
+    return this._provider;
+  }
+
+  public get config(): any {
+    return this._config;
+  }
+}
+
+class KeypaProviderTypeItemCollection {
+  private readonly _items: Array<KeypaProviderTypeItem> = [];
   private readonly _parent: KeypaProviderConfig;
 
   public constructor(config: KeypaProviderConfig) {
     this._parent = config;
   }
 
-  public set<T extends ProviderType>(type: T, config: ProviderConfigType<T>): KeypaProviderConfigCollection {
+  public set<T extends ProviderType>(type: T, config: ProviderConfigType<T>, initializable?: (item: KeypaProviderTypeItem) => boolean): KeypaProviderTypeItemCollection {
     if (this.config.isReadOnly) {
       return this
     }
 
-    this._inner.set(type, config);
-    this._providerTypes.push(type);
+    this._items.push(new KeypaProviderTypeItem(type, config, initializable));
+
     return this;
   }
 
   public get providerTypes(): Array<ProviderType> {
-    return [...this._providerTypes];
+    return this._items.map((item) => item.provider);
   }
 
   public get config(): KeypaProviderConfig {
@@ -40,30 +63,30 @@ class KeypaProviderConfigCollection {
   }
 
   public get<T extends ProviderType>(provider: T): ProviderConfigType<T> {
-    return (this._inner.get(provider) as ProviderConfigType<T>);
+    return (this._items.find((item) => (item.provider === provider))?.config || {});
   }
 
   public *[Symbol.iterator]() {
-    for (const type of this._providerTypes) {
+    for (const type of this.providerTypes) {
       yield this.get(type);
     }
   }
 
-  public forEach(callback: (value: any, key: ProviderType, map: Map<ProviderType, any>) => void, thisArg?: any): void {
-    this._providerTypes.forEach((type) => {
-      callback(this.get(type), type, this._inner);
+  public forEach(callback: (value: any, key: ProviderType, array: Array<KeypaProviderTypeItem>) => void, thisArg?: any): void {
+    this.providerTypes.forEach((type) => {
+      callback(this.get(type), type, this._items);
     }, thisArg);
   }
 }
 
 export class KeypaProviderConfig {
-  private readonly _providerConfigs: KeypaProviderConfigCollection;
+  private readonly _providerConfigs: KeypaProviderTypeItemCollection;
   private readonly _parent: KeypaConfigBuilder;
   private readonly _environment: string;
 
   public constructor(builder: KeypaConfigBuilder, environment: string) {
     this._environment = environment;
-    this._providerConfigs = new KeypaProviderConfigCollection(this);
+    this._providerConfigs = new KeypaProviderTypeItemCollection(this);
     this._parent = builder;
   }
 
@@ -79,7 +102,7 @@ export class KeypaProviderConfig {
     return this._providerConfigs.providerTypes;
   }
 
-  public get providers(): KeypaProviderConfigCollection {
+  public get providers(): KeypaProviderTypeItemCollection {
     return this._providerConfigs;
   }
 }
