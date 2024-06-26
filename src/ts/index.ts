@@ -6,7 +6,7 @@ export { KeypaConfigBuilder, KeypaProviderConfig, KeypaValue };
 export type { ProviderType };
 export type ListenerFn = (result: ListenerResult) => void;
 
-export type CloudProviderExecutionContext = ('aws' | 'azure' | 'gcp' | 'unknown');
+export type CloudProviderExecutionContext = ('aws' | 'azure' | 'gcp' | 'azure-pipelines' | 'github-actions' | 'aws-codebuild' | 'gcp-build' | 'unknown');
 
 const exists = (name: string): boolean => {
   return Boolean(process.env[name]);
@@ -34,6 +34,22 @@ const isInGcp = (): boolean => {
   return (anyOneOf('GCP_PROJECT', 'FUNCTION_NAME', 'FUNCTION_REGION', 'GAE_APPLICATION', 'GAE_ENV ', 'GAE_SERVICE', 'GAE_VERSION', 'GAE_INSTANCE', 'KUBERNETES_SERVICE_HOST', 'KUBERNETES_SERVICE_PORT', 'GCE_METADATA_HOST', 'GCE_METADATA_IP', 'GOOGLE_CLOUD_PROJECT', 'GCLOUD_PROJECT'));
 }
 
+const isGitHubActions = (): boolean => {
+  return (anyOneOf('GITHUB_ACTIONS'));
+}
+
+const isAzurePipelines = (): boolean => {
+  return (anyOneOf('TF_BUILD'));
+}
+
+const isAwsCodeBuild = (): boolean => {
+  return (anyOneOf('CODEBUILD_BUILD_ID'));
+}
+
+const isGcpBuild = (): boolean => {
+  return (anyOneOf('BUILDER_OUTPUT', 'BUILD_ID', 'BUILD_TRIGGER_ID'));
+}
+
 const cloudExecutionContext = (): CloudProviderExecutionContext => {
   if (isInAws()) {
     return 'aws';
@@ -45,6 +61,22 @@ const cloudExecutionContext = (): CloudProviderExecutionContext => {
 
   if (isInGcp()) {
     return 'gcp';
+  }
+
+  if (isGitHubActions()) {
+    return 'github-actions';
+  }
+
+  if (isAzurePipelines()) {
+    return 'azure-pipelines';
+  }
+
+  if (isAwsCodeBuild()) {
+    return 'aws-codebuild';
+  }
+
+  if (isGcpBuild()) {
+    return 'gcp-build';
   }
 
   return 'unknown'
@@ -146,7 +178,7 @@ export class Keypa {
     return (Keypa.current._envCache?.environment || 'unknown');
   }
 
-  public get cloudExecutionContext(): CloudProviderExecutionContext {
+  public static get cloudExecutionContext(): CloudProviderExecutionContext {
     return cloudExecutionContext()
   }
 
