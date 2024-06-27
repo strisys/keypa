@@ -32,9 +32,18 @@ class SecretStore {
         return (await provider());
       }
 
-      this._client = new SecretsManagerClient({
+      const region = (this._options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION);
+
+      if (region) {
+        this._client = new SecretsManagerClient({
+          region,
+          credentials: (await getCredentials())
+        });
+      }
+
+      this._client = (this._client || (new SecretsManagerClient({
         credentials: (await getCredentials())
-      });
+      })));
 
       console.log(`AWS secrets manager created successfully!`);
 
