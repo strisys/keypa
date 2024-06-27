@@ -52,18 +52,6 @@ export class ExecutionContext {
   }
 
   public static get value(): ExecutionContextType {
-    if (ExecutionContext.isInAws()) {
-      return 'aws';
-    }
-
-    if (ExecutionContext.isInAzure()) {
-      return 'azure';
-    }
-
-    if (ExecutionContext.isInGcp()) {
-      return 'gcp';
-    }
-
     if (ExecutionContext.isGitHubActions()) {
       return 'github-actions';
     }
@@ -72,8 +60,20 @@ export class ExecutionContext {
       return 'azure-pipelines';
     }
 
+    if (ExecutionContext.isInAws()) {
+      return 'aws';
+    }
+
     if (ExecutionContext.isAwsCodeBuild()) {
       return 'aws-codebuild';
+    }
+
+    if (ExecutionContext.isInAzure()) {
+      return 'azure';
+    }
+
+    if (ExecutionContext.isInGcp()) {
+      return 'gcp';
     }
 
     if (ExecutionContext.isGcpBuild()) {
