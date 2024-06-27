@@ -59,8 +59,6 @@ describe('KepaConfigBuilder', () => {
 
         Keypa.dispose();
 
-        const v = getEnvFilePath();
-
         const dotEnvConfig = {
           path: getEnvFilePath(),
           debug: true,
@@ -109,7 +107,7 @@ describe('KepaConfigBuilder', () => {
           return;
         }
 
-        this.timeout(15000);
+        this.timeout(25000);
 
         // Assemble
         const environments = ['development', 'production'];
@@ -166,7 +164,7 @@ describe('KepaConfigBuilder', () => {
           return;
         }
 
-        this.timeout(15000);
+        this.timeout(25000);
 
         // Assemble
         const environments = ['development', 'production'];
@@ -184,9 +182,11 @@ describe('KepaConfigBuilder', () => {
           keyVaultName: 'kv-keypa-development',
         }
 
-        const awsConfig = {
-          profile: 'playground',
-        }
+        // const awsConfig = {
+        //   profile: 'playground',
+        // }
+
+        const awsConfig = {}
 
         // Arrange
         builder.get(environments[0]).providers

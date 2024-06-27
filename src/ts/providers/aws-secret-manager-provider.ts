@@ -23,9 +23,7 @@ class SecretStore {
       console.log(`creating AWS secrets manager client ...`);
 
       const getCredentials = async (): Promise<any> => {
-        let config = {
-          profile: (this._options.profile || 'default')
-        }
+        let config = ((this._options.profile) ? { profile: (this._options.profile || 'default') } : {});
 
         // https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/migrate-credential-providers.html
         console.log(`using default credential provider chain (${config.profile}) ...`);
