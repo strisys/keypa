@@ -70,8 +70,14 @@ class KeypaProviderTypeItemCollection {
     return this._parent;
   }
 
-  public get<T extends ProviderType>(provider: T): ProviderConfigType<T> {
-    return (this._items.find((item) => (item.provider === provider))?.config || {});
+  public get<T extends ProviderType>(provider: T): KeypaProviderTypeItem {
+    const item = (this._items.find((item) => (item.provider === provider)));
+
+    if (!item) {
+      throw new Error(`No provider configuration found for type '${provider}'`);
+    }
+
+    return item;
   }
 
   public *[Symbol.iterator]() {

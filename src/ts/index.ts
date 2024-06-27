@@ -275,7 +275,19 @@ export class Keypa {
       const loader = getLoader(providerType);
       processed.push(providerType);
 
-      const config = envConfig.providers.get(providerType);
+      let config = {};
+
+      if (providerType !== 'process.env') {
+        const item = envConfig.providers.get(providerType);
+
+        if (!item.isInitializable) {
+          console.info(`Provider type (${providerType}) was marked as not initializable for the current execution context (${item.executionContext}).`);
+          return loader;
+        }
+
+        config = item.config;
+      }
+
       const fn = loader.getFetchFn();
       const values = fn(config);
       Keypa.hydrate(values, result, environment, valueListener);
@@ -306,9 +318,16 @@ export class Keypa {
 
     // Initialize the other providers
     for (const providerType of envConfig.providerTypes.filter((pt) => !providerTypes.includes(pt))) {
-      const config = envConfig.providers.get(providerType);
+      const item = envConfig.providers.get(providerType);
+
+      if (!item.isInitializable) {
+        console.info(`Provider type (${providerType}) was marked as not initializable for the current execution context (${item.executionContext}).`);
+        continue;
+      }
+
       const fn = getLoader(providerType).getFetchFn();
-      const values = (await fn(config));
+      const values = (await fn(item.config));
+
       Keypa.hydrate(values, accumulator, environment);
     }
 
