@@ -1,6 +1,6 @@
 import { TokenCredential } from '@azure/identity';
 import { DotenvConfigOptions } from 'dotenv';
-import { Keypa, ListenerFn } from './index.js';
+import { Keypa, ListenerFn, ExecutionContext, ExecutionContextType } from './index.js';
 
 export type ProviderType = ('process.env' | 'dotenv' | 'azure-keyvault' | 'aws-secrets-manager');
 
@@ -33,6 +33,14 @@ export class KeypaProviderTypeItem {
 
   public get config(): any {
     return this._config;
+  }
+
+  public get executionContext(): ExecutionContextType {
+    return ExecutionContext.value
+  }
+
+  public executionContextIsOneOf(...contexts: Array<ExecutionContextType>): boolean {
+    return (contexts || []).some((context) => (context === this.executionContext), this);
   }
 }
 

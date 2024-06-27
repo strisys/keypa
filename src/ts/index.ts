@@ -107,7 +107,7 @@ export class ListenerResult {
     return this._accumulator[name];
   }
 
-  public get cloudExecutionContext(): ExecutionContextType {
+  public get executionContext(): ExecutionContextType {
     return ExecutionContext.value
   }
 
@@ -180,7 +180,7 @@ export class Keypa {
     return (Keypa.current._envCache?.environment || 'unknown');
   }
 
-  public static get cloudExecutionContext(): ExecutionContextType {
+  public static get executionContext(): ExecutionContextType {
     return ExecutionContext.value;
   }
 
