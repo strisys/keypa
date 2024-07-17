@@ -1,6 +1,6 @@
 {
   "name": "keypa",
-  "version": "0.0.0-alpha.31",
+  "version": "0.0.0-alpha.32",
   "description": "Simplify the retrieval and debugging of environment variables and secrets sourced from various providers.",
   "main": "./src/js/index.js",
   "exports": {
