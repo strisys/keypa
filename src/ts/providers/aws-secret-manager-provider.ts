@@ -15,26 +15,29 @@ class SecretStore {
     this._options = options;
   }
 
-  private async tryGetClient(): Promise<SecretsManagerClient> {
+  private async tryGetClient(context: string): Promise<SecretsManagerClient> {
+    console.log(`trying to get AWS secrets manager client (context:${context})...`);
+
     if (this._client) {
+      console.log(`AWS secrets manager client fetched from cache (context:${context})...`);
       return this._client;
     }
 
     try {
-      console.log(`creating AWS secrets manager client ...`);
+      console.log(`creating AWS secrets manager client (context:${context})...`);
 
       const getCredentials = async (): Promise<any> => {
         let config = ((this._options.profile) ? { profile: (this._options.profile || 'default') } : {});
 
         // https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/migrate-credential-providers.html
-        console.log(`using default credential provider chain (${config.profile}) ...`);
+        console.log(`using default credential provider chain (profile:${config.profile},context:${context}) ...`);
         const provider = defaultProvider(config);
 
         return (await provider());
       }
 
       const region = (this._options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION);
-      console.log(`creating secrets manager client (region:=${region || ''})...`);
+      console.log(`creating secrets manager client (region:=${region || ''},context:${context})...`);
 
       let secretManagerParams: any = {
         credentials: (await getCredentials()),
@@ -47,7 +50,7 @@ class SecretStore {
       secretManagerParams = ((region) ? { ...secretManagerParams, region } : secretManagerParams);
 
       const client = (this._client = new SecretsManagerClient(secretManagerParams));
-      console.log(`AWS secrets manager created successfully!`);
+      console.log(`AWS secrets manager created successfully! (context:${context})`);
 
       return client
     }
@@ -60,7 +63,7 @@ class SecretStore {
   }
 
   private async getAllSecrets(): Promise<Array<SecretListEntry>> {
-    const client = (await this.tryGetClient());
+    const client = (await this.tryGetClient('getAllSecrets'));
 
     const secrets: Array<SecretListEntry> = [];
     let nextToken = null;
@@ -93,7 +96,7 @@ class SecretStore {
 
   private async getSecretValue(secretIdentitfier: string): Promise<GetSecretValueCommandOutput> {
     try {
-      const client = (await this.tryGetClient());
+      const client = (await this.tryGetClient('getSecretValue'));
 
       console.log(`fetching AWS secret (secret-id:${secretIdentitfier})...`);
       const val = (await client.send(new GetSecretValueCommand({ SecretId: secretIdentitfier })));
