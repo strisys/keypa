@@ -1,6 +1,7 @@
 
 import { SecretsManagerClient, ListSecretsCommand, GetSecretValueCommand, SecretListEntry, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
+import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 import { ProviderConfigType } from '../config.js';
 import { KeypaValue } from '../index.js';
 
@@ -33,21 +34,22 @@ class SecretStore {
       }
 
       const region = (this._options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION);
+      console.log(`creating secrets manager client (region:=${region || ''})...`);
 
-      if (region) {
-        this._client = new SecretsManagerClient({
-          region,
-          credentials: (await getCredentials())
-        });
+      let secretManagerParams: any = {
+        credentials: (await getCredentials()),
+        requestHandler: new NodeHttpHandler({
+          connectionTimeout: 5000,
+          socketTimeout: 5000
+        })
       }
 
-      this._client = (this._client || (new SecretsManagerClient({
-        credentials: (await getCredentials())
-      })));
+      secretManagerParams = ((region) ? { ...secretManagerParams, region } : secretManagerParams);
 
+      const client = (this._client = new SecretsManagerClient(secretManagerParams));
       console.log(`AWS secrets manager created successfully!`);
 
-      return this._client;
+      return client
     }
     catch (error) {
       const message = `Failed to create AWS secrets manager. ${error}`;
@@ -92,7 +94,12 @@ class SecretStore {
   private async getSecretValue(secretIdentitfier: string): Promise<GetSecretValueCommandOutput> {
     try {
       const client = (await this.tryGetClient());
-      return (await client.send(new GetSecretValueCommand({ SecretId: secretIdentitfier })));
+
+      console.log(`fetching AWS secret (secret-id:${secretIdentitfier})...`);
+      const val = (await client.send(new GetSecretValueCommand({ SecretId: secretIdentitfier })));
+      console.log(`AWS secret (secret-id:${secretIdentitfier}) fetched successfully!`);
+
+      return val
     }
     catch (error) {
       throw new Error(`Error retrieving AWS secret: ${secretIdentitfier}. ${error}`);

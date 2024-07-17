@@ -182,11 +182,9 @@ describe('KepaConfigBuilder', () => {
           keyVaultName: 'kv-keypa-development',
         }
 
-        // const awsConfig = {
-        //   profile: 'playground',
-        // }
-
-        const awsConfig = {}
+        const awsConfig = {
+          profile: 'playground',
+        }
 
         // Arrange
         builder.get(environments[0]).providers
